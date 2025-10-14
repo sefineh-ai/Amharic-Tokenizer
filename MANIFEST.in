@@ -1,0 +1,2 @@
+include README.md
+recursive-include amharic_tokenizer *.pyx *.pxd *.pxi *.py
