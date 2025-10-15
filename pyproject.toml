@@ -19,3 +19,25 @@ ignore = []
 addopts = "-q"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+
+[project]
+name = "amharic-tokenizer"
+version = "0.1.1"
+description = "Amharic tokenizer with BPE-like merges over decomposed fidel (Cython)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [ { name = "Sefineh Tesfa", email = "sefinehtesfa34@gmail.com" } ]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Cython",
+  "Topic :: Text Processing :: Linguistic"
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/sefineh-ai/AMH-Tokenizer"
+Issues = "https://github.com/sefineh-ai/AMH-Tokenizer/issues"
+
+[project.scripts]
+amh-tokenizer = "amharic_tokenizer.cli:main"

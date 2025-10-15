@@ -1,15 +1,17 @@
 # cython: language_level=3
 import json
+import re
 from amharic_tokenizer.fidel_map import AMHARIC_FIDEL_MAP
 
 cdef class AmharicTokenizer:
     cdef dict _fidel_map
-    cdef dict _reverse_map
+    cdef public dict _reverse_map
     cdef int vocab_size
     cdef int num_merges
-    cdef list _merges
-    cdef set _merge_lookup
-    cdef dict _vocab
+    cdef public list _merges
+    cdef public set _merge_lookup
+    cdef public dict _vocab
+    cdef public dict _merge_ranks
 
     def __init__(self, fidel_map=None, vocab_size=5000, num_merges=100):
         self._fidel_map = fidel_map or AMHARIC_FIDEL_MAP
@@ -19,10 +21,22 @@ cdef class AmharicTokenizer:
         self._merge_lookup = set()
         self._vocab = {}
         self._reverse_map = {v: k for k, v in self._fidel_map.items()}
+        self._merge_ranks = {}
 
     @classmethod
     def from_default(cls):
         return cls()
+
+    cpdef bint is_trained(self):
+        return bool(self._merges)
+
+    cpdef str _clean(self, str text):
+        # Basic cleaning: normalize whitespace and strip
+        # Keeps Amharic/Ethiopic chars as-is; removes stray control chars
+        if not text:
+            return ""
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
 
     cpdef str _decompose(self, text):
         cdef list chars = []
@@ -86,14 +100,18 @@ cdef class AmharicTokenizer:
             new_vocab[word.replace(pair_str, merged)] = freq
         return new_vocab
 
-    cpdef train(self, str corpus_text):
-        cdef str corpus = self._decompose(corpus_text)
+    cpdef int train(self, str corpus_text, bint verbose=False, int log_every=1000):
+        cdef str cleaned = self._clean(corpus_text)
+        cdef str corpus = self._decompose(cleaned)
         cdef dict vocab = self._get_vocab(corpus)
         self._vocab = vocab.copy()
         cdef list merges = []
         cdef dict pairs
         cdef tuple best_pair
         cdef int i
+
+        if verbose:
+            print(f"[AMH-Tokenizer] Training start: target_merges={self.num_merges}, corpus_chars={len(corpus)}")
 
         for i in range(self.num_merges):
             pairs = self._get_stats(vocab)
@@ -102,31 +120,64 @@ cdef class AmharicTokenizer:
             best_pair = max(pairs, key=pairs.get)
             vocab = self._merge_vocab(best_pair, vocab)
             merges.append(best_pair)
+            if verbose and (i + 1) % log_every == 0:
+                print(f"[AMH-Tokenizer] Merges learned: {i + 1}")
 
         self._merges = merges
         self._merge_lookup = set(merges)
         self._vocab = vocab
+        # Build ranks for greedy application: lower index = higher priority
+        self._merge_ranks = {pair: idx for idx, pair in enumerate(self._merges)}
+        if verbose:
+            print(f"[AMH-Tokenizer] Training complete: total_merges={len(self._merges)}")
+        return len(self._merges)
+
+    cpdef list _apply_bpe(self, list seqs):
+        # Greedy BPE using learned merge ranks
+        cdef dict ranks = self._merge_ranks
+        if not ranks:
+            return seqs
+        cdef list tokens = seqs[:]
+        cdef int i
+        cdef tuple pair
+        cdef tuple best_pair
+        cdef int best_rank
+        cdef int idx
+        while True:
+            best_pair = None
+            best_rank = 0x7fffffff
+            # Find best-ranked adjacent pair
+            for i in range(len(tokens) - 1):
+                pair = (tokens[i], tokens[i+1])
+                if pair in ranks:
+                    idx = ranks[pair]
+                    if idx < best_rank:
+                        best_rank = idx
+                        best_pair = pair
+            if best_pair is None:
+                break
+            # Merge the best pair
+            i = 0
+            while i < len(tokens) - 1:
+                if i < len(tokens) - 1 and (tokens[i], tokens[i+1]) == best_pair:
+                    tokens[i:i+2] = [''.join(best_pair)]
+                else:
+                    i += 1
+        return tokens
 
     cpdef list tokenize(self, str text):
-        cdef list words = text.split()
+        cdef str cleaned = self._clean(text)
+        if not self._merges:
+            raise ValueError("Tokenizer is not trained. Call train(corpus_text) before tokenize().")
+        cdef list words = cleaned.split()
         cdef list tokenized = []
         cdef str word
         cdef list seqs
-        cdef int i
-        cdef tuple pair
         for word in words:
-            seqs = []
-            for c in word:
-                seqs.append(self._fidel_map.get(c, c))
+            # Decompose to base characters first, then apply BPE on characters
+            seqs = list(self._decompose(word))
             seqs.append("</w>")
-            i = 0
-            while i < len(seqs)-1:
-                pair = (seqs[i], seqs[i+1])
-                if pair in self._merge_lookup:
-                    seqs[i:i+2] = [''.join(pair)]
-                    i = max(i-1, 0)
-                else:
-                    i += 1
+            seqs = self._apply_bpe(seqs)
             tokenized.extend(seqs)
             tokenized.append(" ")
         if tokenized:
@@ -161,8 +212,9 @@ cdef class AmharicTokenizer:
         with open(f"{path_prefix}.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         tokenizer = cls()
-        tokenizer._merges = data["merges"]
+        tokenizer._merges = [tuple(p) for p in data["merges"]]
         tokenizer._merge_lookup = set(tokenizer._merges)
         tokenizer._vocab = data["vocab"]
         tokenizer._reverse_map = data["reverse_map"]
+        tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
         return tokenizer

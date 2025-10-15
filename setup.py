@@ -18,7 +18,7 @@ extensions = [
 
 setup(
     name="amharic-tokenizer",
-    version="0.1.0",
+    version="0.1.1",
     author="Sefineh Tesfa",
     author_email="sefinehtesfa34@gmail.com",
     description=(
@@ -29,6 +29,7 @@ setup(
     long_description_content_type="text/markdown",
     packages=["amharic_tokenizer"],
     ext_modules=cythonize(extensions, language_level="3"),
+    # Console scripts are provided via pyproject.toml [project.scripts]
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Cython",
