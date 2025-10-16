@@ -1,0 +1,41 @@
+# These are supported funding model platforms
+
+github: 
+  - sefineh-ai                     # Your GitHub Sponsors username
+
+patreon: 
+  - sefineh                        # Your Patreon username
+
+open_collective: 
+  - amharic-tokenizer              # Placeholder, update once Open Collective page is ready
+
+ko_fi: 
+  - sefineh                        # Your Ko-fi username
+
+tidelift: 
+  # Leave empty if not using
+
+community_bridge: 
+  # Leave empty if not using
+
+liberapay: 
+  # Leave empty if not using
+
+issuehunt: 
+  # Leave empty if not using
+
+lfx_crowdfunding: 
+  # Leave empty if not using
+
+polar: 
+  # Leave empty if not using
+
+buy_me_a_coffee: 
+  - sefineh                        # Your Buy Me a Coffee username
+
+thanks_dev: 
+  # Leave empty if not using
+
+custom: 
+  - https://buymeacoffee.com/sefineh
+  - https://opencollective.com/amharic-tokenizer  # Placeholder, update when page is live
