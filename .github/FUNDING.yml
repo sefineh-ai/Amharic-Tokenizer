@@ -1,41 +1,15 @@
-# These are supported funding model platforms
+# .github/FUNDING.yml
 
-github: 
-  - sefineh-ai                     # Your GitHub Sponsors username
+github: sefineh-ai                  # Must be enrolled in GitHub Sponsors
 
-patreon: 
-  - sefineh                        # Your Patreon username
+patreon: sefineh                     # Single Patreon username, as a string
 
-open_collective: 
-  - amharic-tokenizer              # Placeholder, update once Open Collective page is ready
+open_collective: amharic-tokenizer   # Single Open Collective username/page slug
 
-ko_fi: 
-  - sefineh                        # Your Ko-fi username
+ko_fi: sefineh                       # Single Ko-fi username, as a string
 
-tidelift: 
-  # Leave empty if not using
-
-community_bridge: 
-  # Leave empty if not using
-
-liberapay: 
-  # Leave empty if not using
-
-issuehunt: 
-  # Leave empty if not using
-
-lfx_crowdfunding: 
-  # Leave empty if not using
-
-polar: 
-  # Leave empty if not using
-
-buy_me_a_coffee: 
-  - sefineh                        # Your Buy Me a Coffee username
-
-thanks_dev: 
-  # Leave empty if not using
+buy_me_a_coffee: sefineh             # Single Buy Me a Coffee username, as a string
 
 custom: 
   - https://buymeacoffee.com/sefineh
-  - https://opencollective.com/amharic-tokenizer  # Placeholder, update when page is live
+  - https://opencollective.com/amharic-tokenizer  # Placeholder, update once page is live
