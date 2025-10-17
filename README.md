@@ -1,3 +1,13 @@
+# 🇪🇹 AMH-Tokenizer
+### Syllable-Aware Byte Pair Encoding (BPE) Tokenizer for the Amharic Language
+
+[![PyPI version](https://img.shields.io/pypi/v/amharic-tokenizer.svg)](https://pypi.org/project/amharic-tokenizer/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)]()
+[![Build Status](https://github.com/sefineh-ai/AMH-Tokenizer/actions/workflows/python-app.yml/badge.svg)](https://github.com/sefineh-ai/AMH-Tokenizer/actions)
+[![Downloads](https://static.pepy.tech/personalized-badge/amharic-tokenizer?period=total&units=none&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/amharic-tokenizer)
+
+
 # Amharic Tokenizer
 
 **Amharic tokenizer with a GPT-style BPE-like pipeline over decomposed fidel.**
