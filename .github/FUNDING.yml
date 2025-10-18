@@ -1,15 +1,15 @@
 # .github/FUNDING.yml
 
-github: sefineh-ai                  # Must be enrolled in GitHub Sponsors
+#github: sefineh-ai                  # Must be enrolled in GitHub Sponsors
 
 patreon: sefineh                     # Single Patreon username, as a string
 
 open_collective: amharic-tokenizer   # Single Open Collective username/page slug
 
-ko_fi: sefineh                       # Single Ko-fi username, as a string
+#ko_fi: sefineh                       # Single Ko-fi username, as a string
 
-buy_me_a_coffee: sefineh             # Single Buy Me a Coffee username, as a string
+#buy_me_a_coffee: sefineh             # Single Buy Me a Coffee username, as a string
 
-custom: 
-  - https://buymeacoffee.com/sefineh
-  - https://opencollective.com/amharic-tokenizer  # Placeholder, update once page is live
+#custom: 
+  #- https://buymeacoffee.com/sefineh
+  #- https://opencollective.com/amharic-tokenizer  # Placeholder, update once page is live
