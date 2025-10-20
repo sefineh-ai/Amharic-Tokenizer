@@ -1,4 +1,4 @@
-# Amharic Tokenizer
+# Amharic Tokenizer  🇪🇹
 
 **Amharic tokenizer with a GPT-style BPE-like pipeline over decomposed fidel.**
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
