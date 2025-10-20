@@ -25,7 +25,14 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def from_default(cls):
-        return cls()
+        # Provide a minimally trained default instance so tokenize() is usable immediately
+        tokenizer = cls()
+        try:
+            tokenizer.train("ኢትዮጵያ ጥሩ ናት።", verbose=False)
+        except Exception:
+            # In case training fails for any reason, still return the instance
+            pass
+        return tokenizer
 
     cpdef bint is_trained(self):
         return bool(self._merges)
@@ -173,12 +180,38 @@ cdef class AmharicTokenizer:
         cdef list tokenized = []
         cdef str word
         cdef list seqs
+        cdef list prefixed
+        cdef bint is_first
+        cdef str core
         for word in words:
             # Decompose to base characters first, then apply BPE on characters
             seqs = list(self._decompose(word))
             seqs.append("</w>")
             seqs = self._apply_bpe(seqs)
-            tokenized.extend(seqs)
+            # Add WordPiece-style continuation prefix '##' for non-initial subwords
+            prefixed = []
+            is_first = True
+            for t in seqs:
+                if t == "</w>":
+                    prefixed.append(t)
+                    is_first = True
+                else:
+                    # If a merged token ends with '</w>', split it so suffix is handled separately
+                    if t.endswith("</w>"):
+                        core = t[:-4]
+                        if is_first:
+                            prefixed.append(core)
+                        else:
+                            prefixed.append("##" + core)
+                        prefixed.append("</w>")
+                        is_first = True
+                    else:
+                        if is_first:
+                            prefixed.append(t)
+                            is_first = False
+                        else:
+                            prefixed.append("##" + t)
+            tokenized.extend(prefixed)
             tokenized.append(" ")
         if tokenized:
             tokenized.pop()
@@ -188,12 +221,26 @@ cdef class AmharicTokenizer:
         cdef list words = []
         cdef list current_word = []
         cdef str t
+        cdef str piece
         for t in tokens:
             if t == " ":
+                if current_word:
+                    words.append(self._compose(''.join(current_word)))
+                    current_word = []
+                # if current_word is empty, this is likely the separator after </w>; skip
+            elif t == "</w>":
                 words.append(self._compose(''.join(current_word)))
                 current_word = []
-            elif t != "</w>":
-                current_word.append(t)
+            else:
+                piece = t[2:] if t.startswith("##") else t
+                if piece.endswith("</w>"):
+                    piece = piece[:-4]
+                    if piece:
+                        current_word.append(piece)
+                    words.append(self._compose(''.join(current_word)))
+                    current_word = []
+                else:
+                    current_word.append(piece)
         if current_word:
             words.append(self._compose(''.join(current_word)))
         return ' '.join(words)

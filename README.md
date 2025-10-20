@@ -5,6 +5,26 @@ Implements: **cleaning → fidel decomposition → BPE training/application → 
 
 ---
 
+## What's new in 0.1.2
+
+- WordPiece-style continuation prefixes: non-initial subwords are now prefixed with `##` during tokenization.
+  - Example: `Going` → `['G', '##o', '##i', '##n', '##g', '</w>']`
+  - Amharic example:
+    Input: `የተባለ ውን የሚያደርገው ም በዚህ ምክንያት ነው`
+    Tokens:
+    ```
+    ['የአተአ', '##በ', '##ኣለ', '##አ', '</w>', ' ', 'ወእ', '##ነ', '##እ', '</w>', ' ', 'የአመኢየኣ', '##ደ', '##አረ', '##እ', '##ገ', '##አወእ', '</w>', ' ', 'መእ', '</w>', ' ', 'በአ', '##ዘኢ', '##ሀ', '##እ', '</w>', ' ', 'መእ', '##ከ', '##እነእ', '##የኣ', '##ተእ', '</w>', ' ', 'ነ', '##አወእ', '</w>']
+    ```
+    Detokenization matches the input.
+- Detokenization fixes:
+  - Strips `##` correctly and handles embedded `</w>` markers without leaking into text.
+  - Avoids extra spaces resulting from end-of-word handling.
+- Developer ergonomics: `AmharicTokenizer.from_default()` returns a minimally trained instance for quick experiments.
+
+> Note: The `</w>` token remains an internal end-of-word marker in the token stream; it is never emitted in detokenized text.
+
+---
+
 ## Installation
 
 ### From PyPI (recommended)
@@ -125,4 +145,4 @@ pip install -i https://test.pypi.org/simple/ \
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/sefineh-ai/AMH-Tokenizer/blob/main/LICENSE) file for details.
