@@ -1,4 +1,16 @@
 # Amharic Tokenizer  🇪🇹
+[![PyPI Version](https://img.shields.io/pypi/v/amharic-tokenizer.svg?logo=pypi&logoColor=white)](https://pypi.org/project/amharic-tokenizer/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/amharic-tokenizer.svg?logo=python&logoColor=white)](https://pypi.org/project/amharic-tokenizer/)
+[![Cython](https://img.shields.io/badge/Cython-Optimized-brightgreen?logo=cython&logoColor=white)](https://cython.org/)
+[![Build Status](https://github.com/sefineh-ai/AMH-Tokenizer/actions/workflows/pylint.yml/badge.svg)](https://github.com/sefineh-ai/AMH-Tokenizer/actions)
+[![License](https://img.shields.io/github/license/sefineh-ai/AMH-Tokenizer.svg?color=yellow)](https://github.com/sefineh-ai/AMH-Tokenizer/blob/main/LICENSE)
+[![Downloads](https://img.shields.io/pypi/dm/amharic-tokenizer?label=Downloads&color=orange)](https://pypi.org/project/amharic-tokenizer/)
+[![Code Style: PEP8](https://img.shields.io/badge/code%20style-pep8-lightgrey.svg)](https://www.python.org/dev/peps/pep-0008/)
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-%23EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/sefineh-ai)
+[![Patreon](https://img.shields.io/badge/Support-Patreon-orange.svg?logo=patreon&logoColor=white)](https://patreon.com/sefineh)
+[![Open Collective](https://img.shields.io/badge/Backers-Open%20Collective-blue.svg?logo=opencollective&logoColor=white)](https://opencollective.com/sefineh-ai)
+
 
 **Amharic tokenizer with a GPT-style BPE-like pipeline over decomposed fidel.**
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
