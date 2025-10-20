@@ -2,7 +2,7 @@
 from amharic_tokenizer import AmharicTokenizer
 
 def test_roundtrip_basic():
-    tok = AmharicTokenizer.from_default()
+    tok = AmharicTokenizer.load('amh_bpe_v0.1.2')
     text = "ኢትዮጵያ በጊዜው ያልከፈለችውን የአንድ ቢሊዮን ዶላር ዩሮ ቦንድ በተመለከተ በገንዘብ ሚኒስቴር እና በግል አበዳሪዎች ኮሚቴ መካከል ሲደርግ የነበረው ድርድር ያለ ስምምነት ተጠናቀቀ።"
     tokens = tok.tokenize(text)
     print(tokens)
