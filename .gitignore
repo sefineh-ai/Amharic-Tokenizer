@@ -48,6 +48,5 @@ htmlcov/
 # Local config
 *.env
 cleaned_amharic.txt
-amh_bpe.json
 amh_bpe_model.json
 
