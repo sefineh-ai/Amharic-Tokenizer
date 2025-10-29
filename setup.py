@@ -1,5 +1,5 @@
+"""Setup script for the Amharic Tokenizer package with Cython acceleration."""
 import os
-
 from Cython.Build import cythonize
 from setuptools import Extension, setup
 

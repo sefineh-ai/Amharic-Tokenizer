@@ -1,5 +1,6 @@
-from .fidel_map import AMHARIC_FIDEL_MAP as AMHARIC_FIDEL_MAP
-from .fidel_map import reverse_fidel_map as reverse_fidel_map
-from .tokenizer import AmharicTokenizer as AmharicTokenizer
+"""Top-level package imports for amharic_tokenizer."""
+
+from .fidel_map import AMHARIC_FIDEL_MAP, reverse_fidel_map
+from .tokenizer import AmharicTokenizer
 
 __all__ = ["AmharicTokenizer", "AMHARIC_FIDEL_MAP", "reverse_fidel_map"]

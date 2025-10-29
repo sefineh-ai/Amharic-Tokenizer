@@ -1,15 +1,37 @@
+"""Test script for basic roundtrip functionality of the AmharicTokenizer."""
+
 from amharic_tokenizer import AmharicTokenizer
 
+
 def test_roundtrip_basic():
-    tok = AmharicTokenizer.load('amh_bpe')
-    text = "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል"
+    """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
+    tok = AmharicTokenizer.load("amh_bpe")
+
+    text = (
+        "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ "
+        "አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል"
+    )
+
+    # Tokenize text
     tokens = tok.tokenize(text)
-    print(tokens)
+    print("Tokens:", tokens)
+
+    # Convert tokens to IDs
     ids = tok.convert_tokens_to_ids(tokens)
-    print(ids)
-    print(tok.convert_ids_to_tokens(ids))
-    display_tokens = [t.replace('</w>', '') for t in tokens if t != '</w>']
+    print("IDs:", ids)
+
+    # Convert IDs back to tokens
+    tokens_from_ids = tok.convert_ids_to_tokens(ids)
+    print("Tokens from IDs:", tokens_from_ids)
+
+    # Clean tokens for display
+    display_tokens = [t.replace("</w>", "") for t in tokens if t != "</w>"]
     print("Display Tokens:", display_tokens)
-    print(tok.detokenize(tokens))
+
+    # Detokenize back to original text
+    detokenized = tok.detokenize(tokens)
+    print("Detokenized:", detokenized)
+
+
 if __name__ == "__main__":
     test_roundtrip_basic()

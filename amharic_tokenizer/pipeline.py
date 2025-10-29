@@ -1,10 +1,10 @@
+"""Pipeline module to train and save the Amharic BPE tokenizer."""
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
-from .tokenizer import AmharicTokenizer
-
+from .import AmharicTokenizer
 
 def train_and_save(
     corpus_path: str,
@@ -27,5 +27,3 @@ def train_and_save(
     learned = tokenizer.train(text, verbose=verbose, log_every=log_every)
     tokenizer.save(output_prefix)
     return learned
-
-
