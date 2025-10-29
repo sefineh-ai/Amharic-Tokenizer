@@ -23,23 +23,10 @@ cdef class AmharicTokenizer:
         self._reverse_map = {v: k for k, v in self._fidel_map.items()}
         self._merge_ranks = {}
 
-    @classmethod
-    def from_default(cls):
-        # Provide a minimally trained default instance so tokenize() is usable immediately
-        tokenizer = cls()
-        try:
-            tokenizer.train("ኢትዮጵያ ጥሩ ናት።", verbose=False)
-        except Exception:
-            # In case training fails for any reason, still return the instance
-            pass
-        return tokenizer
-
     cpdef bint is_trained(self):
         return bool(self._merges)
 
     cpdef str _clean(self, str text):
-        # Basic cleaning: normalize whitespace and strip
-        # Keeps Amharic/Ethiopic chars as-is; removes stray control chars
         if not text:
             return ""
         text = re.sub(r"\s+", " ", text)
@@ -133,14 +120,12 @@ cdef class AmharicTokenizer:
         self._merges = merges
         self._merge_lookup = set(merges)
         self._vocab = vocab
-        # Build ranks for greedy application: lower index = higher priority
         self._merge_ranks = {pair: idx for idx, pair in enumerate(self._merges)}
         if verbose:
             print(f"[AMH-Tokenizer] Training complete: total_merges={len(self._merges)}")
         return len(self._merges)
 
     cpdef list _apply_bpe(self, list seqs):
-        # Greedy BPE using learned merge ranks
         cdef dict ranks = self._merge_ranks
         if not ranks:
             return seqs
@@ -153,7 +138,6 @@ cdef class AmharicTokenizer:
         while True:
             best_pair = None
             best_rank = 0x7fffffff
-            # Find best-ranked adjacent pair
             for i in range(len(tokens) - 1):
                 pair = (tokens[i], tokens[i+1])
                 if pair in ranks:
@@ -163,7 +147,6 @@ cdef class AmharicTokenizer:
                         best_pair = pair
             if best_pair is None:
                 break
-            # Merge the best pair
             i = 0
             while i < len(tokens) - 1:
                 if i < len(tokens) - 1 and (tokens[i], tokens[i+1]) == best_pair:
@@ -184,11 +167,9 @@ cdef class AmharicTokenizer:
         cdef bint is_first
         cdef str core
         for word in words:
-            # Decompose to base characters first, then apply BPE on characters
             seqs = list(self._decompose(word))
             seqs.append("</w>")
             seqs = self._apply_bpe(seqs)
-            # Add WordPiece-style continuation prefix '##' for non-initial subwords
             prefixed = []
             is_first = True
             for t in seqs:
@@ -196,7 +177,6 @@ cdef class AmharicTokenizer:
                     prefixed.append(t)
                     is_first = True
                 else:
-                    # If a merged token ends with '</w>', split it so suffix is handled separately
                     if t.endswith("</w>"):
                         core = t[:-4]
                         if is_first:
