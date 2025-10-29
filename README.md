@@ -91,8 +91,11 @@ text = "ኢትዮጵያ ጥሩ ናት።"
 # Tokenize
 tokens = tok.tokenize(text)
 print(tokens)  # variable-length subword tokens
+# Tokens to ids
+ids = tok.encode(text) # or tok.convert_tokens_to_ids(tokens)
+# Ids to tokens
+tokens = tok.convert_ids_to_tokens(ids)
 
-# Optional: remove end-of-word markers for display
 display_tokens = [t.replace('</w>', '') for t in tokens if t != '</w>']
 print(display_tokens)
 

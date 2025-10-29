@@ -12,6 +12,8 @@ cdef class AmharicTokenizer:
     cdef public set _merge_lookup
     cdef public dict _vocab
     cdef public dict _merge_ranks
+    cdef public dict _token_to_id
+    cdef public dict _id_to_token
 
     def __init__(self, fidel_map=None, vocab_size=5000, num_merges=100):
         self._fidel_map = fidel_map or AMHARIC_FIDEL_MAP
@@ -22,6 +24,79 @@ cdef class AmharicTokenizer:
         self._vocab = {}
         self._reverse_map = {v: k for k, v in self._fidel_map.items()}
         self._merge_ranks = {}
+        self._token_to_id = {}
+        self._id_to_token = {}
+    
+    cpdef build_token_mappings(self):
+        """
+        Builds token -> ID and ID -> token dictionaries, ensuring all
+        tokens, including '##' prefixed continuations and the space token, are mapped.
+        """
+        cdef list special_tokens = ["<pad>", "<unk>", "<bos>", "<eos>", " "] # <-- CRITICAL: Include the space token
+        self._token_to_id = {}
+        self._id_to_token = {}
+        cdef int idx = 0
+        cdef list raw_bpe_tokens
+        cdef str token
+        
+        for t in special_tokens:
+            self._token_to_id[t] = idx
+            self._id_to_token[idx] = t
+            idx += 1
+            
+        raw_bpe_tokens = self.get_vocab_tokens()
+        for token in raw_bpe_tokens:
+            if token not in self._token_to_id:
+                self._token_to_id[token] = idx
+                self._id_to_token[idx] = token
+                idx += 1
+        
+            if token != "</w>":
+                prefixed_token = "##" + token
+                if prefixed_token not in self._token_to_id:
+                     self._token_to_id[prefixed_token] = idx
+                     self._id_to_token[idx] = prefixed_token
+                     idx += 1
+
+    cpdef list convert_tokens_to_ids(self, list tokens):
+        """
+        Converts a list of tokens to a list of IDs.
+        Unknown tokens are mapped to <unk>.
+        """
+        unk_id = self._token_to_id.get("<unk>", 1)
+        return [self._token_to_id.get(t, unk_id) for t in tokens]
+
+    cpdef list convert_ids_to_tokens(self, list ids):
+        """
+        Converts a list of IDs to a list of tokens.
+        Unknown IDs are mapped to <unk>.
+        """
+        unk_token = "<unk>"
+        return [self._id_to_token.get(i, unk_token) for i in ids]
+
+    cpdef list get_vocab_tokens(self):
+        """
+        Returns the list of all unique BPE tokens in the vocab.
+        This includes all base characters (initial vocabulary) and all learned subwords.
+        """
+        cdef set tokens = set()
+        cdef str word
+        for word in self._vocab.keys():
+            tokens.update(word.split())
+        cdef tuple pair
+        for pair in self._merges:
+            tokens.add(pair[0])
+            tokens.add(pair[1])
+            tokens.add(''.join(pair))
+        for t in tokens.copy():
+            for char in t:
+                if len(char) == 1 and char not in tokens:
+                     tokens.add(char)
+
+        tokens.add("</w>") 
+
+        return sorted(tokens)
+
 
     cpdef bint is_trained(self):
         return bool(self._merges)
@@ -121,9 +196,23 @@ cdef class AmharicTokenizer:
         self._merge_lookup = set(merges)
         self._vocab = vocab
         self._merge_ranks = {pair: idx for idx, pair in enumerate(self._merges)}
+        self.build_token_mappings()
         if verbose:
             print(f"[AMH-Tokenizer] Training complete: total_merges={len(self._merges)}")
         return len(self._merges)
+
+    cpdef list encode(self, str text):
+        """
+        Tokenizes the text and converts the resulting tokens to a list of IDs.
+        """
+        cdef list tokens = self.tokenize(text)
+        return self.convert_tokens_to_ids(tokens)
+    cpdef str decode(self, list ids):
+        """
+        Converts a list of IDs back to text.
+        """
+        cdef list tokens = self.convert_ids_to_tokens(ids)
+        return self.detokenize(tokens)
 
     cpdef list _apply_bpe(self, list seqs):
         cdef dict ranks = self._merge_ranks
@@ -207,7 +296,6 @@ cdef class AmharicTokenizer:
                 if current_word:
                     words.append(self._compose(''.join(current_word)))
                     current_word = []
-                # if current_word is empty, this is likely the separator after </w>; skip
             elif t == "</w>":
                 words.append(self._compose(''.join(current_word)))
                 current_word = []
@@ -229,7 +317,9 @@ cdef class AmharicTokenizer:
         data = {
             "merges": self._merges,
             "vocab": self._vocab,
-            "reverse_map": self._reverse_map
+            "reverse_map": self._reverse_map,
+            "token_to_id": self._token_to_id,
+            "id_to_token": self._id_to_token
         }
         with open(f"{path_prefix}.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -244,4 +334,6 @@ cdef class AmharicTokenizer:
         tokenizer._vocab = data["vocab"]
         tokenizer._reverse_map = data["reverse_map"]
         tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
+        tokenizer._token_to_id = data["token_to_id"]
+        tokenizer._id_to_token = {v: k for k, v in tokenizer._token_to_id.items()} 
         return tokenizer
