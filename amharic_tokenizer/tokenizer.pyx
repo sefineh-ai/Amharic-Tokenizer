@@ -2,7 +2,7 @@
 import json
 import re
 from amharic_tokenizer.fidel_map import AMHARIC_FIDEL_MAP
-
+import importlib.resources
 cdef class AmharicTokenizer:
     cdef dict _fidel_map
     cdef public dict _reverse_map
@@ -326,8 +326,15 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def load(cls, str path_prefix):
-        with open(f"{path_prefix}.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            # Try to load from package data (e.g. amh_bpe.json inside amharic_tokenizer/)
+            with importlib.resources.open_text("amharic_tokenizer", f"{path_prefix}.json", encoding="utf-8") as f:
+                data = json.load(f)
+        except (FileNotFoundError, ModuleNotFoundError):
+            # Fallback: load from direct path
+            with open(f"{path_prefix}.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+
         tokenizer = cls()
         tokenizer._merges = [tuple(p) for p in data["merges"]]
         tokenizer._merge_lookup = set(tokenizer._merges)
@@ -335,5 +342,5 @@ cdef class AmharicTokenizer:
         tokenizer._reverse_map = data["reverse_map"]
         tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
         tokenizer._token_to_id = data["token_to_id"]
-        tokenizer._id_to_token = {v: k for k, v in tokenizer._token_to_id.items()} 
+        tokenizer._id_to_token = {v: k for k, v in tokenizer._token_to_id.items()}
         return tokenizer

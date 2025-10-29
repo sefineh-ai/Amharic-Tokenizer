@@ -22,7 +22,7 @@ python_files = ["test_*.py"]
 
 [project]
 name = "amharic-tokenizer"
-version = "0.1.4"
+version = "0.1.7"
 description = "Amharic tokenizer with BPE-like merges over decomposed fidel (Cython)"
 readme = "README.md"
 requires-python = ">=3.8"

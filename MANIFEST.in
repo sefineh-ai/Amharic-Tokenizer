@@ -1,6 +1,7 @@
 include README.md
 include LICENSE
 include pyproject.toml
+include amharic_tokenizer/amh_bpe.json
 recursive-include amharic_tokenizer *.pyx *.pxd *.pxi *.py *.so *.cpp
 recursive-include examples *.py
 recursive-include tests *.py
