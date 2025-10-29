@@ -96,8 +96,7 @@ cdef class AmharicTokenizer:
         tokens.add("</w>") 
 
         return sorted(tokens)
-
-
+      
     cpdef bint is_trained(self):
         return bool(self._merges)
 
