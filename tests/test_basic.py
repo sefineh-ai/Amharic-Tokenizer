@@ -5,7 +5,7 @@ from amharic_tokenizer import AmharicTokenizer
 
 def test_roundtrip_basic():
     """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
-    tok = AmharicTokenizer.load("amh_bpe")
+    tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
 
     text = (
         "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ "
@@ -31,7 +31,7 @@ def test_roundtrip_basic():
     # Detokenize back to original text
     detokenized = tok.detokenize(tokens)
     print("Detokenized:", detokenized)
-
+    print("vocab_size:", tok.vocab_size)
 
 if __name__ == "__main__":
     test_roundtrip_basic()

@@ -6,8 +6,8 @@ import importlib.resources
 cdef class AmharicTokenizer:
     cdef dict _fidel_map
     cdef public dict _reverse_map
-    cdef int vocab_size
-    cdef int num_merges
+    cdef public int vocab_size
+    cdef public int num_merges
     cdef public list _merges
     cdef public set _merge_lookup
     cdef public dict _vocab
@@ -319,7 +319,9 @@ cdef class AmharicTokenizer:
             "vocab": self._vocab,
             "reverse_map": self._reverse_map,
             "token_to_id": self._token_to_id,
-            "id_to_token": self._id_to_token
+            "id_to_token": self._id_to_token,
+            "vocab_size": self.vocab_size,
+            "num_merges": self.num_merges
         }
         with open(f"{path_prefix}.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -334,11 +336,12 @@ cdef class AmharicTokenizer:
             # Fallback: load from direct path
             with open(f"{path_prefix}.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
-
         tokenizer = cls()
+        tokenizer._vocab = data["vocab"]
         tokenizer._merges = [tuple(p) for p in data["merges"]]
         tokenizer._merge_lookup = set(tokenizer._merges)
-        tokenizer._vocab = data["vocab"]
+        tokenizer.vocab_size = data["vocab_size"]
+        tokenizer.num_merges = data["num_merges"]
         tokenizer._reverse_map = data["reverse_map"]
         tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
         tokenizer._token_to_id = data["token_to_id"]

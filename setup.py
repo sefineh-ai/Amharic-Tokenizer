@@ -1,7 +1,7 @@
 """Setup script for the Amharic Tokenizer package with Cython acceleration."""
 import os
 from Cython.Build import cythonize
-from setuptools import Extension, setup
+from setuptools import Extension, setup # type: ignore
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme_path = os.path.join(here, "README.md")

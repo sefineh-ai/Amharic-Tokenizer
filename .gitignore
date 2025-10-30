@@ -44,7 +44,9 @@ env/
 htmlcov/
 .tox/
 .mypy_cache/
-
+data_crawler
+scripts/
+amh_bpe_sample.json
 # Local config
 *.env
 cleaned_amharic.txt

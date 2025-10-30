@@ -84,7 +84,7 @@ amh-tokenizer train cleaned_amharic.txt amh_bpe --num-merges 50000 --verbose --l
 from amharic_tokenizer import AmharicTokenizer
 
 # Load a trained model
-tok = AmharicTokenizer.load("amh_bpe")  # use full path if needed
+tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
 
 text = "ኢትዮጵያ ጥሩ ናት።"
 
