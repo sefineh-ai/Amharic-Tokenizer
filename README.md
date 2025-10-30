@@ -16,26 +16,59 @@
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
 
 ---
+## What's new in v0.2.0
+1. **Pretrained tokenizer loading**
 
-## What's new in 0.1.2
+  - You can now load a pretrained tokenizer directly:
 
-- WordPiece-style continuation prefixes: non-initial subwords are now prefixed with `##` during tokenization.
-  - Example: `Going` → `['G', '##o', '##i', '##n', '##g', '</w>']`
-  - Amharic example:
-    Input: `የተባለ ውን የሚያደርገው ም በዚህ ምክንያት ነው`
-    Tokens:
-    ```
-    ['የአተአ', '##በ', '##ኣለ', '##አ', '</w>', ' ', 'ወእ', '##ነ', '##እ', '</w>', ' ', 'የአመኢየኣ', '##ደ', '##አረ', '##እ', '##ገ', '##አወእ', '</w>', ' ', 'መእ', '</w>', ' ', 'በአ', '##ዘኢ', '##ሀ', '##እ', '</w>', ' ', 'መእ', '##ከ', '##እነእ', '##የኣ', '##ተእ', '</w>', ' ', 'ነ', '##አወእ', '</w>']
-    ```
-    Detokenization matches the input.
-- Detokenization fixes:
-  - Strips `##` correctly and handles embedded `</w>` markers without leaking into text.
-  - Avoids extra spaces resulting from end-of-word handling.
-- Developer ergonomics: `AmharicTokenizer.from_default()` returns a minimally trained instance for quick experiments.
+   ```python
+   from amharic_tokenizer import AmharicTokenizer
+   tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
+   ```
+   This version includes a pretrained model (`amh_bpe_v0.2.0`) that can be used immediately without any additional setup and training.
 
-> Note: The `</w>` token remains an internal end-of-word marker in the token stream; it is never emitted in detokenized text.
-
+2. **Full token-to-ID and ID-to-token functionality**
+  - Added complete round-trip processing methods:
+   ```python
+   tokens = tok.tokenize(text)
+   ids = tok.convert_tokens_to_ids(tokens)
+   tokens_from_ids = tok.convert_ids_to_tokens(ids)
+   detokenized = tok.detokenize(tokens)
+   ```
+   The tokenizer now supports seamless conversion between tokens and IDs, ensuring full consistency between tokenization and detokenization.
 ---
+
+### Example
+
+```python
+text = "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል"
+
+tokens = tok.tokenize(text)
+ids = tok.convert_tokens_to_ids(tokens)
+tokens_from_ids = tok.convert_ids_to_tokens(ids)
+detokenized = tok.detokenize(tokens)
+
+print("Tokens:", tokens)
+print("IDs:", ids)
+print("Tokens from IDs:", tokens_from_ids)
+print("Detokenized:", detokenized)
+
+Output:
+    Tokens:
+    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '</w>', ' ', 'ከአ', '##ኢተእየኦጰእ', '##የ', '##ኣ', '</w>', ' ', 'ገኣ', '##ረ', '##እ', '</w>', ... ]
+    IDs:
+    [56252, 191975, 123541, 121977, 9863, 4, 134750, 119975, 156339, 120755, ...]
+    Tokens from IDs:
+    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '</w>', ...]
+    Detokenized:
+    ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል
+```
+### Additional Improvements
+* Added `vocab_size` property for inspecting model vocabulary.
+* Added `test_roundtrip_basic.py` example script for verifying tokenizer round-trip behavior.
+* Internal `</w>` token remains an end-of-word marker and is excluded from final detokenized output.
+---
+
 
 ## Installation
 
