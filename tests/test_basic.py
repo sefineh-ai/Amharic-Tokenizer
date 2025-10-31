@@ -5,12 +5,10 @@ from amharic_tokenizer import AmharicTokenizer
 
 def test_roundtrip_basic():
     """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
-    tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
+    tok = AmharicTokenizer.load("amh_bpe_sample")
 
     text = (
-        "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ "
-        "አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል"
-    )
+        "የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ" )
 
     # Tokenize text
     tokens = tok.tokenize(text)

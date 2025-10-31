@@ -3,6 +3,7 @@ import json
 import re
 from amharic_tokenizer.fidel_map import AMHARIC_FIDEL_MAP
 import importlib.resources
+
 cdef class AmharicTokenizer:
     cdef dict _fidel_map
     cdef public dict _reverse_map
@@ -17,89 +18,15 @@ cdef class AmharicTokenizer:
 
     def __init__(self, fidel_map=None, vocab_size=5000, num_merges=100):
         self._fidel_map = fidel_map or AMHARIC_FIDEL_MAP
+        self._reverse_map = {v: k for k, v in self._fidel_map.items()}
         self.vocab_size = vocab_size
         self.num_merges = num_merges
         self._merges = []
         self._merge_lookup = set()
         self._vocab = {}
-        self._reverse_map = {v: k for k, v in self._fidel_map.items()}
         self._merge_ranks = {}
         self._token_to_id = {}
         self._id_to_token = {}
-    
-    cpdef build_token_mappings(self):
-        """
-        Builds token -> ID and ID -> token dictionaries, ensuring all
-        tokens, including '##' prefixed continuations and the space token, are mapped.
-        """
-        cdef list special_tokens = ["<pad>", "<unk>", "<bos>", "<eos>", " "] # <-- CRITICAL: Include the space token
-        self._token_to_id = {}
-        self._id_to_token = {}
-        cdef int idx = 0
-        cdef list raw_bpe_tokens
-        cdef str token
-        
-        for t in special_tokens:
-            self._token_to_id[t] = idx
-            self._id_to_token[idx] = t
-            idx += 1
-            
-        raw_bpe_tokens = self.get_vocab_tokens()
-        for token in raw_bpe_tokens:
-            if token not in self._token_to_id:
-                self._token_to_id[token] = idx
-                self._id_to_token[idx] = token
-                idx += 1
-        
-            if token != "</w>":
-                prefixed_token = "##" + token
-                if prefixed_token not in self._token_to_id:
-                     self._token_to_id[prefixed_token] = idx
-                     self._id_to_token[idx] = prefixed_token
-                     idx += 1
-
-    cpdef list convert_tokens_to_ids(self, list tokens):
-        """
-        Converts a list of tokens to a list of IDs.
-        Unknown tokens are mapped to <unk>.
-        """
-        unk_id = self._token_to_id.get("<unk>", 1)
-        return [self._token_to_id.get(t, unk_id) for t in tokens]
-
-    cpdef list convert_ids_to_tokens(self, list ids):
-        """
-        Converts a list of IDs to a list of tokens.
-        Unknown IDs are mapped to <unk>.
-        """
-        unk_token = "<unk>"
-        return [self._id_to_token.get(i, unk_token) for i in ids]
-
-    cpdef list get_vocab_tokens(self):
-        """
-        Returns the list of all unique BPE tokens in the vocab.
-        This includes all base characters (initial vocabulary) and all learned subwords.
-        """
-        cdef set tokens = set()
-        cdef str word
-        for word in self._vocab.keys():
-            tokens.update(word.split())
-        cdef tuple pair
-        for pair in self._merges:
-            tokens.add(pair[0])
-            tokens.add(pair[1])
-            tokens.add(''.join(pair))
-        for t in tokens.copy():
-            for char in t:
-                if len(char) == 1 and char not in tokens:
-                     tokens.add(char)
-
-        tokens.add("</w>") 
-
-        return sorted(tokens)
-
-
-    cpdef bint is_trained(self):
-        return bool(self._merges)
 
     cpdef str _clean(self, str text):
         if not text:
@@ -107,14 +34,13 @@ cdef class AmharicTokenizer:
         text = re.sub(r"\s+", " ", text)
         return text.strip()
 
-    cpdef str _decompose(self, text):
+    cpdef str _decompose(self, str text):
         cdef list chars = []
-        cdef str c
         for c in text:
             chars.append(self._fidel_map.get(c, c))
         return ''.join(chars)
 
-    cpdef str _compose(self, text):
+    cpdef str _compose(self, str text):
         cdef int i = 0
         cdef int n = len(text)
         cdef list result = []
@@ -134,13 +60,12 @@ cdef class AmharicTokenizer:
                 i += 1
         return ''.join(result)
 
-    cpdef dict _get_vocab(self, corpus):
+    cpdef dict _get_vocab(self, str corpus):
         cdef dict vocab = {}
         cdef str word
         cdef str key
         for word in corpus.split():
-            tokens = list(word)
-            tokens.append("</w>")
+            tokens = list(word) + ["</w>"]
             key = ' '.join(tokens)
             vocab[key] = vocab.get(key, 0) + 1
         return vocab
@@ -154,8 +79,8 @@ cdef class AmharicTokenizer:
         cdef tuple p
         for word, freq in vocab.items():
             symbols = word.split()
-            for i in range(len(symbols)-1):
-                p = (symbols[i], symbols[i+1])
+            for i in range(len(symbols) - 1):
+                p = (symbols[i], symbols[i + 1])
                 pairs[p] = pairs.get(p, 0) + freq
         return pairs
 
@@ -201,18 +126,38 @@ cdef class AmharicTokenizer:
             print(f"[AMH-Tokenizer] Training complete: total_merges={len(self._merges)}")
         return len(self._merges)
 
-    cpdef list encode(self, str text):
-        """
-        Tokenizes the text and converts the resulting tokens to a list of IDs.
-        """
-        cdef list tokens = self.tokenize(text)
-        return self.convert_tokens_to_ids(tokens)
-    cpdef str decode(self, list ids):
-        """
-        Converts a list of IDs back to text.
-        """
-        cdef list tokens = self.convert_ids_to_tokens(ids)
-        return self.detokenize(tokens)
+    cpdef build_token_mappings(self):
+        """Build token -> ID and ID -> token dictionaries"""
+        cdef list special_tokens = ["<pad>", "<unk>", "<bos>", "<eos>"]
+        self._token_to_id = {}
+        self._id_to_token = {}
+        cdef int idx = 0
+
+        for t in special_tokens:
+            self._token_to_id[t] = idx
+            self._id_to_token[idx] = t
+            idx += 1
+        cdef set seen = set()
+        for word in self._vocab.keys():
+            for token in word.split():
+                if token not in seen:
+                    self._token_to_id[token] = idx
+                    self._id_to_token[idx] = token
+                    seen.add(token)
+                    idx += 1
+
+        for pair in self._merges:
+            merged = ''.join(pair)
+            if merged not in seen:
+                self._token_to_id[merged] = idx
+                self._id_to_token[idx] = merged
+                seen.add(merged)
+                idx += 1
+
+        if "</w>" not in self._token_to_id:
+            self._token_to_id["</w>"] = idx
+            self._id_to_token[idx] = "</w>"
+
 
     cpdef list _apply_bpe(self, list seqs):
         cdef dict ranks = self._merge_ranks
@@ -228,7 +173,7 @@ cdef class AmharicTokenizer:
             best_pair = None
             best_rank = 0x7fffffff
             for i in range(len(tokens) - 1):
-                pair = (tokens[i], tokens[i+1])
+                pair = (tokens[i], tokens[i + 1])
                 if pair in ranks:
                     idx = ranks[pair]
                     if idx < best_rank:
@@ -238,7 +183,7 @@ cdef class AmharicTokenizer:
                 break
             i = 0
             while i < len(tokens) - 1:
-                if i < len(tokens) - 1 and (tokens[i], tokens[i+1]) == best_pair:
+                if (tokens[i], tokens[i+1]) == best_pair:
                     tokens[i:i+2] = [''.join(best_pair)]
                 else:
                     i += 1
@@ -247,40 +192,17 @@ cdef class AmharicTokenizer:
     cpdef list tokenize(self, str text):
         cdef str cleaned = self._clean(text)
         if not self._merges:
-            raise ValueError("Tokenizer is not trained. Call train(corpus_text) before tokenize().")
+            raise ValueError("Tokenizer is not trained. Call train(corpus_text) first.")
+
         cdef list words = cleaned.split()
         cdef list tokenized = []
         cdef str word
         cdef list seqs
-        cdef list prefixed
-        cdef bint is_first
-        cdef str core
+
         for word in words:
-            seqs = list(self._decompose(word))
-            seqs.append("</w>")
+            seqs = list(self._decompose(word)) + ["</w>"]
             seqs = self._apply_bpe(seqs)
-            prefixed = []
-            is_first = True
-            for t in seqs:
-                if t == "</w>":
-                    prefixed.append(t)
-                    is_first = True
-                else:
-                    if t.endswith("</w>"):
-                        core = t[:-4]
-                        if is_first:
-                            prefixed.append(core)
-                        else:
-                            prefixed.append("##" + core)
-                        prefixed.append("</w>")
-                        is_first = True
-                    else:
-                        if is_first:
-                            prefixed.append(t)
-                            is_first = False
-                        else:
-                            prefixed.append("##" + t)
-            tokenized.extend(prefixed)
+            tokenized.extend(seqs)
             tokenized.append(" ")
         if tokenized:
             tokenized.pop()
@@ -290,28 +212,33 @@ cdef class AmharicTokenizer:
         cdef list words = []
         cdef list current_word = []
         cdef str t
-        cdef str piece
         for t in tokens:
             if t == " ":
                 if current_word:
-                    words.append(self._compose(''.join(current_word)))
+                    words.append(self._compose(''.join(current_word).replace("</w>", "")))
                     current_word = []
             elif t == "</w>":
                 words.append(self._compose(''.join(current_word)))
                 current_word = []
             else:
-                piece = t[2:] if t.startswith("##") else t
-                if piece.endswith("</w>"):
-                    piece = piece[:-4]
-                    if piece:
-                        current_word.append(piece)
-                    words.append(self._compose(''.join(current_word)))
-                    current_word = []
-                else:
-                    current_word.append(piece)
+                current_word.append(t)
         if current_word:
-            words.append(self._compose(''.join(current_word)))
+            words.append(self._compose(''.join(current_word).replace("</w>", "")))
         return ' '.join(words)
+
+    cpdef list convert_tokens_to_ids(self, list tokens):
+        cdef int unk_id = self._token_to_id.get("<unk>", 1)
+        return [self._token_to_id.get(t, unk_id) for t in tokens]
+
+    cpdef list convert_ids_to_tokens(self, list ids):
+        cdef str unk_token = "<unk>"
+        return [self._id_to_token.get(i, unk_token) for i in ids]
+
+    cpdef list encode(self, str text):
+        return self.convert_tokens_to_ids(self.tokenize(text))
+
+    cpdef str decode(self, list ids):
+        return self.detokenize(self.convert_ids_to_tokens(ids))
 
     cpdef save(self, str path_prefix):
         data = {
@@ -328,22 +255,32 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def load(cls, str path_prefix):
+        import importlib.resources
+        import json
+
         try:
-            # Try to load from package data (e.g. amh_bpe.json inside amharic_tokenizer/)
-            with importlib.resources.open_text("amharic_tokenizer", f"{path_prefix}.json", encoding="utf-8") as f:
+            with importlib.resources.files("amharic_tokenizer").joinpath(f"{path_prefix}.json").open("r", encoding="utf-8") as f:
                 data = json.load(f)
         except (FileNotFoundError, ModuleNotFoundError):
-            # Fallback: load from direct path
             with open(f"{path_prefix}.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
+
         tokenizer = cls()
         tokenizer._vocab = data["vocab"]
         tokenizer._merges = [tuple(p) for p in data["merges"]]
         tokenizer._merge_lookup = set(tokenizer._merges)
-        tokenizer.vocab_size = data["vocab_size"]
-        tokenizer.num_merges = data["num_merges"]
-        tokenizer._reverse_map = data["reverse_map"]
+        tokenizer.vocab_size = data.get("vocab_size", 5000)
+        tokenizer.num_merges = data.get("num_merges", len(tokenizer._merges))
+        tokenizer.build_token_mappings()
+
+        if "token_to_id" in data and "id_to_token" in data:
+            # overwrite special tokens only, keep BPE merges from build_token_mappings
+            for k, v in data["token_to_id"].items():
+                if k not in tokenizer._token_to_id:
+                    tokenizer._token_to_id[k] = v
+            for k, v in data["id_to_token"].items():
+                if k not in tokenizer._id_to_token:
+                    tokenizer._id_to_token[k] = v
+
         tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
-        tokenizer._token_to_id = data["token_to_id"]
-        tokenizer._id_to_token = {v: k for k, v in tokenizer._token_to_id.items()}
         return tokenizer
