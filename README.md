@@ -108,7 +108,16 @@ amh-tokenizer train /abs/path/to/cleaned_amharic.txt /abs/path/to/amh_bpe \
 # Example using relative paths
 amh-tokenizer train cleaned_amharic.txt amh_bpe --num-merges 50000 --verbose --log-every 2000
 ```
+## Training (Python)
+```python
+from amharic_tokenizer.tokenizer import AmharicTokenizer
 
+tokenizer = AmharicTokenizer(vocab_size=5000, num_merges=2000)
+tokenizer.train(corpus_text, verbose=True, log_every=100)
+tokenizer.save("amh_bpe_model")
+tokenizer = AmharicTokenizer.load("amh_bpe_model")
+
+```
 ---
 
 ## Quick Usage (Python)

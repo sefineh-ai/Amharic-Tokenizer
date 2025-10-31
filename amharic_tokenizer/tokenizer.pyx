@@ -127,37 +127,45 @@ cdef class AmharicTokenizer:
         return len(self._merges)
 
     cpdef build_token_mappings(self):
-        """Build token -> ID and ID -> token dictionaries"""
-        cdef list special_tokens = ["<pad>", "<unk>", "<bos>", "<eos>"]
+        """Build token -> ID and ID -> token dictionaries with vocab size limit"""
+        cdef list special_tokens = ["<pad>", "<unk>", "<bos>", "<eos>", "</w>"]
         self._token_to_id = {}
         self._id_to_token = {}
         cdef int idx = 0
+        cdef set seen = set()
 
         for t in special_tokens:
             self._token_to_id[t] = idx
             self._id_to_token[idx] = t
+            seen.add(t)
             idx += 1
-        cdef set seen = set()
+
+        # Add vocab tokens, respecting vocab_size
         for word in self._vocab.keys():
             for token in word.split():
                 if token not in seen:
+                    if idx >= self.vocab_size:
+                        return
                     self._token_to_id[token] = idx
                     self._id_to_token[idx] = token
                     seen.add(token)
                     idx += 1
 
+        # Add merges, respecting vocab_size
         for pair in self._merges:
             merged = ''.join(pair)
             if merged not in seen:
+                if idx >= self.vocab_size:
+                    return
                 self._token_to_id[merged] = idx
                 self._id_to_token[idx] = merged
                 seen.add(merged)
                 idx += 1
 
-        if "</w>" not in self._token_to_id:
+        # Ensure </w> is included
+        if "</w>" not in self._token_to_id and idx < self.vocab_size:
             self._token_to_id["</w>"] = idx
             self._id_to_token[idx] = "</w>"
-
 
     cpdef list _apply_bpe(self, list seqs):
         cdef dict ranks = self._merge_ranks
@@ -184,7 +192,14 @@ cdef class AmharicTokenizer:
             i = 0
             while i < len(tokens) - 1:
                 if (tokens[i], tokens[i+1]) == best_pair:
-                    tokens[i:i+2] = [''.join(best_pair)]
+                    merged = ''.join(best_pair)
+                    tokens[i:i+2] = [merged]
+                    # Auto-add merged token to vocab/token_to_id if missing
+                    if merged not in self._token_to_id:
+                        new_id = len(self._token_to_id)
+                        self._token_to_id[merged] = new_id
+                        self._id_to_token[new_id] = merged
+                    i += 1
                 else:
                     i += 1
         return tokens
@@ -228,7 +243,16 @@ cdef class AmharicTokenizer:
 
     cpdef list convert_tokens_to_ids(self, list tokens):
         cdef int unk_id = self._token_to_id.get("<unk>", 1)
-        return [self._token_to_id.get(t, unk_id) for t in tokens]
+        # Auto-add unknown tokens dynamically
+        cdef list ids = []
+        cdef str t
+        for t in tokens:
+            if t not in self._token_to_id:
+                new_id = len(self._token_to_id)
+                self._token_to_id[t] = new_id
+                self._id_to_token[new_id] = t
+            ids.append(self._token_to_id.get(t, unk_id))
+        return ids
 
     cpdef list convert_ids_to_tokens(self, list ids):
         cdef str unk_token = "<unk>"
@@ -255,9 +279,6 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def load(cls, str path_prefix):
-        import importlib.resources
-        import json
-
         try:
             with importlib.resources.files("amharic_tokenizer").joinpath(f"{path_prefix}.json").open("r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -272,15 +293,5 @@ cdef class AmharicTokenizer:
         tokenizer.vocab_size = data.get("vocab_size", 5000)
         tokenizer.num_merges = data.get("num_merges", len(tokenizer._merges))
         tokenizer.build_token_mappings()
-
-        if "token_to_id" in data and "id_to_token" in data:
-            # overwrite special tokens only, keep BPE merges from build_token_mappings
-            for k, v in data["token_to_id"].items():
-                if k not in tokenizer._token_to_id:
-                    tokenizer._token_to_id[k] = v
-            for k, v in data["id_to_token"].items():
-                if k not in tokenizer._id_to_token:
-                    tokenizer._id_to_token[k] = v
-
         tokenizer._merge_ranks = {pair: idx for idx, pair in enumerate(tokenizer._merges)}
         return tokenizer
