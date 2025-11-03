@@ -33,4 +33,4 @@ AMHARIC_FIDEL_MAP = {
     "ፈ":"ፈአ","ፉ":"ፈኡ","ፊ":"ፈኢ","ፋ":"ፈኣ","ፌ":"ፈኤ","ፍ":"ፈእ","ፎ":"ፈኦ","ፏ":"ፈኡኣ",
     "ፐ":"ፐአ","ፑ":"ፐኡ","ፒ":"ፐኢ","ፓ":"ፐኣ","ፔ":"ፐኤ","ፕ":"ፐእ","ፖ":"ፐኦ","ፗ":"ፐኡኣ",
 }
-reverse_fidel_map = {v: k for k, v in AMHARIC_FIDEL_MAP.items()}
+REVERSE_FIDEL_MAP = {v: k for k, v in AMHARIC_FIDEL_MAP.items()}
