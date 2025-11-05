@@ -16,23 +16,22 @@
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
 
 ---
-## What's new in v0.2.2
+## What's new in v0.2.3
 1. **Pretrained tokenizer loading**
 
   - You can now load a pretrained tokenizer directly:
 
    ```python
    from amharic_tokenizer import AmharicTokenizer
-   tok = AmharicTokenizer.load("amh_bpe_v0.2.2")
+   tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
    ```
-   This version includes a pretrained model (`amh_bpe_v0.2.2`) that can be used immediately without any additional setup and training.
+   This version includes a pretrained model (`amh_bpe_v0.2.3`) that can be used immediately without any additional setup and training.
 
 2. **Full token-to-ID and ID-to-token functionality**
   - Added complete round-trip processing methods:
    ```python
    tokens = tok.tokenize(text)
-   ids = tok.convert_tokens_to_ids(tokens)
-   tokens_from_ids = tok.convert_ids_to_tokens(ids)
+   ids = tok.encode(tokens)
    detokenized = tok.detokenize(tokens)
    ```
    The tokenizer now supports seamless conversion between tokens and IDs, ensuring full consistency between tokenization and detokenization.
@@ -45,21 +44,20 @@ text = "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አ�
 
 tokens = tok.tokenize(text)
 ids = tok.convert_tokens_to_ids(tokens)
-tokens_from_ids = tok.convert_ids_to_tokens(ids)
+tokens = tok.decode(ids)
 detokenized = tok.detokenize(tokens)
 
 print("Tokens:", tokens)
 print("IDs:", ids)
-print("Tokens from IDs:", tokens_from_ids)
 print("Detokenized:", detokenized)
 
 Output:
     Tokens:
-    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '<eow>', ' ', 'ከአ', '##ኢተእየኦጰእ', '##የ', '##ኣ', '<eow>', ' ', 'ገኣ', '##ረ', '##እ', '<eow>', ... ]
+    ['ሰእወኢ', 'ደ', 'እነ', 'እ', '<eow>', ' ', 'ከአ', 'ኢተእየኦጰእ', 'የ', 'ኣ', '<eow>', ' ', 'ገኣ', 'ረ', 'እ', '<eow>', ... ]
     IDs:
     [56252, 191975, 123541, 121977, 9863, 4, 134750, 119975, 156339, 120755, ...]
     Tokens from IDs:
-    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '<eow>', ...]
+    ['ሰእወኢ', 'ደ', 'እነ', 'እ', '<eow>', ...]
     Detokenized:
     ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል
 ```
@@ -126,7 +124,7 @@ tokenizer = AmharicTokenizer.load("amh_bpe_model")
 from amharic_tokenizer import AmharicTokenizer
 
 # Load a trained model
-tok = AmharicTokenizer.load("amh_bpe_v0.2.2")
+tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
 
 text = "ኢትዮጵያ ጥሩ ናት።"
 
