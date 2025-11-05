@@ -55,18 +55,18 @@ print("Detokenized:", detokenized)
 
 Output:
     Tokens:
-    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '</w>', ' ', 'ከአ', '##ኢተእየኦጰእ', '##የ', '##ኣ', '</w>', ' ', 'ገኣ', '##ረ', '##እ', '</w>', ... ]
+    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '<eow>', ' ', 'ከአ', '##ኢተእየኦጰእ', '##የ', '##ኣ', '<eow>', ' ', 'ገኣ', '##ረ', '##እ', '<eow>', ... ]
     IDs:
     [56252, 191975, 123541, 121977, 9863, 4, 134750, 119975, 156339, 120755, ...]
     Tokens from IDs:
-    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '</w>', ...]
+    ['ሰእወኢ', '##ደ', '##እነ', '##እ', '<eow>', ...]
     Detokenized:
     ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል
 ```
 ### Additional Improvements
 * Added `vocab_size` property for inspecting model vocabulary.
 * Added `test_roundtrip_basic.py` example script for verifying tokenizer round-trip behavior.
-* Internal `</w>` token remains an end-of-word marker and is excluded from final detokenized output.
+* Internal `<eow>` token remains an end-of-word marker and is excluded from final detokenized output.
 ---
 
 
@@ -126,7 +126,7 @@ tokenizer = AmharicTokenizer.load("amh_bpe_model")
 from amharic_tokenizer import AmharicTokenizer
 
 # Load a trained model
-tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
+tok = AmharicTokenizer.load("amh_bpe_v0.2.1")
 
 text = "ኢትዮጵያ ጥሩ ናት።"
 
@@ -135,10 +135,9 @@ tokens = tok.tokenize(text)
 print(tokens)  # variable-length subword tokens
 # Tokens to ids
 ids = tok.encode(text) # or tok.convert_tokens_to_ids(tokens)
-# Ids to tokens
-tokens = tok.convert_ids_to_tokens(ids)
+decoded = tok.decode(ids)  # or tok.detokenize(tokens)
 
-display_tokens = [t.replace('</w>', '') for t in tokens if t != '</w>']
+display_tokens = [t.replace('<eow>', '') for t in tokens if t != '<eow>']
 print(display_tokens)
 
 # Detokenize back to original text
