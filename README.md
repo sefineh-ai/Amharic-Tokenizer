@@ -16,16 +16,16 @@
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
 
 ---
-## What's new in v0.2.0
+## What's new in v0.2.2
 1. **Pretrained tokenizer loading**
 
   - You can now load a pretrained tokenizer directly:
 
    ```python
    from amharic_tokenizer import AmharicTokenizer
-   tok = AmharicTokenizer.load("amh_bpe_v0.2.0")
+   tok = AmharicTokenizer.load("amh_bpe_v0.2.2")
    ```
-   This version includes a pretrained model (`amh_bpe_v0.2.0`) that can be used immediately without any additional setup and training.
+   This version includes a pretrained model (`amh_bpe_v0.2.2`) that can be used immediately without any additional setup and training.
 
 2. **Full token-to-ID and ID-to-token functionality**
   - Added complete round-trip processing methods:
@@ -126,7 +126,7 @@ tokenizer = AmharicTokenizer.load("amh_bpe_model")
 from amharic_tokenizer import AmharicTokenizer
 
 # Load a trained model
-tok = AmharicTokenizer.load("amh_bpe_v0.2.1")
+tok = AmharicTokenizer.load("amh_bpe_v0.2.2")
 
 text = "ኢትዮጵያ ጥሩ ናት።"
 

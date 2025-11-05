@@ -18,7 +18,7 @@ extensions = [
 
 setup(
     name="amharic-tokenizer",
-    version="0.2.1",
+    version="0.2.2",
     author="Sefineh Tesfa",
     author_email="sefinehtesfa34@gmail.com",
     description=(
