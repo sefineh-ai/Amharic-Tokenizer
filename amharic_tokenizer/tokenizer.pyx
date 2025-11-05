@@ -1,10 +1,10 @@
 # amharic_tokenizer.pyx
 
+import re
 import json
 from collections import Counter
-from typing import Dict, List, Set, Tuple, Optional, Any
+from typing import List
 from amharic_tokenizer.fidel_map import AMHARIC_FIDEL_MAP, REVERSE_FIDEL_MAP
-
 cdef class AmharicTokenizer:
     """
     Optimized BPE Tokenizer for Amharic Fidel using Cython.
@@ -19,7 +19,7 @@ cdef class AmharicTokenizer:
     cdef public int _max_vocab_size 
     cdef public dict _token_to_id
     cdef public dict _id_to_token
-    cdef int _next_id
+    cdef public int _next_id
 
     def __init__(self, int num_merges=50000, int max_vocab_size=5000):
         self._vocabulary = {}
@@ -30,6 +30,18 @@ cdef class AmharicTokenizer:
         self._id_to_token = {}
         self._next_id = 0
         self._initialize_base_vocabulary()
+
+    cpdef str _clean_corpus(self, str text):
+        """
+        Clean the Amharic corpus by:
+        - Removing English letters and numbers
+        - Optionally remove unwanted punctuation
+        - Keep Amharic Fidel characters and whitespace
+        """
+        cleaned_text = re.sub(r'[A-Za-z0-9]', '', text)
+        cleaned_text = re.sub(r'[^\u1200-\u137F\s]', '', cleaned_text)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        return cleaned_text
 
     cdef void _initialize_base_vocabulary(self):
         cdef set initial_tokens = set()
@@ -75,7 +87,7 @@ cdef class AmharicTokenizer:
         return preprocessed_corpus
 
     cpdef int train(self, str amharic_corpus, bint verbose=False, int log_every=1000):
-        cdef list tokenized_words = self.preprocess(amharic_corpus)
+        cdef list tokenized_words = self.preprocess(self._clean_corpus(amharic_corpus))
         cdef pair_counts = Counter()
         cdef list word_tokens
         cdef dict word_pairs
@@ -88,14 +100,11 @@ cdef class AmharicTokenizer:
         cdef tuple best_pair
         cdef list token_list, new_list, new_tokenized_words
         cdef object new_pair_counts
-        
         for i in range(self._num_merges):
-            
             if len(self._vocabulary) >= self._max_vocab_size:
                 if verbose:
                     print(f"Stopping BPE training. Max vocabulary size ({self._max_vocab_size}) reached.")
                 break
-                
             if verbose and (i + 1) % log_every == 0:
                 print(f"Merge {i + 1}/{self._num_merges} completed. Current vocab size: {len(self._vocabulary)}")
                 
@@ -107,14 +116,13 @@ cdef class AmharicTokenizer:
                 break
                 
             new_token = ''.join(best_pair)
-            
             if new_token not in self._vocabulary:
                 self._merge_rank_map[new_token] = len(self._merge_rank_map) + 1
                 self._vocabulary[new_token] = pair_counts[best_pair]
-                self._add_to_vocab_maps(new_token) 
+                self._add_to_vocab_maps(new_token)
+
             new_tokenized_words = []
             new_pair_counts = pair_counts.copy()
-            
             for token_list in tokenized_words:
                 if new_token in ''.join(token_list) or best_pair in self._get_pairs(token_list):
                     old_pairs = self._get_pairs(token_list)
@@ -127,16 +135,13 @@ cdef class AmharicTokenizer:
                         else:
                             new_list.append(token_list[j])
                             j += 1
-                            
                     new_tokenized_words.append(new_list)
                     new_pair_counts.subtract(old_pairs)
                     new_pair_counts.update(self._get_pairs(new_list))
                 else:
                     new_tokenized_words.append(token_list)
-            
             tokenized_words = new_tokenized_words
             pair_counts = new_pair_counts
-
         return len(self._merge_rank_map)
 
     cpdef tuple _get_best_merge(self, list current_corpus, dict reversed_merge_map):
@@ -162,12 +167,10 @@ cdef class AmharicTokenizer:
         cdef int i, j
         cdef str pair_str
         cdef list updated_corpus, token_list, new_token_list
-
         while True:
             best_pair = self._get_best_merge(corpus, reversed_merge_map)
             if best_pair is None:
                 break
-                
             pair_str = ''.join(best_pair)
             updated_corpus = []
             for token_list in corpus:
@@ -193,7 +196,6 @@ cdef class AmharicTokenizer:
         return self.detokenize(tokens)
 
     cpdef str detokenize(self, List[str] tokens):
-        # Join all tokens, then replace <eow> with a space to separate words
         cdef str temp_string = "".join(tokens).replace("<eow>", " ")
         cdef list word_segments = temp_string.split()
         cdef list final_text_words = []
@@ -220,7 +222,6 @@ cdef class AmharicTokenizer:
                     reconstructed_word.append(chars_list[i])
                     i += 1
             final_text_words.append("".join(reconstructed_word))
-            
         return " ".join(final_text_words).replace("<unk>", "")
 
     cpdef void save(self, str file_path):
@@ -242,6 +243,8 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def load(cls, file_path):
+        if not file_path.endswith(".json"):
+            file_path += ".json"
         with open(file_path, 'r', encoding='utf-8') as f:
             state = json.load(f)
             
