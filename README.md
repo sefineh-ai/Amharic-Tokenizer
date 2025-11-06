@@ -16,7 +16,7 @@
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
 
 ---
-## What's new in v0.2.3
+## What's new in v0.2.4
 1. **Pretrained tokenizer loading**
 
   - You can now load a pretrained tokenizer directly:
