@@ -23,9 +23,9 @@ Implements: **cleaning → fidel decomposition → BPE training/application → 
 
    ```python
    from amharic_tokenizer import AmharicTokenizer
-   tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
+   tok = AmharicTokenizer.load("amh_bpe_vv0.2.4")
    ```
-   This version includes a pretrained model (`amh_bpe_v0.2.3`) that can be used immediately without any additional setup and training.
+   This version includes a pretrained model (`amh_bpe_vv0.2.4`) that can be used immediately without any additional setup and training.
 
 2. **Full token-to-ID and ID-to-token functionality**
   - Added complete round-trip processing methods:
@@ -44,7 +44,7 @@ Implements: **cleaning → fidel decomposition → BPE training/application → 
 from amharic_tokenizer import AmharicTokenizer
 def test_roundtrip_basic():
     """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
-    tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
+    tok = AmharicTokenizer.load("amh_bpe_vv0.2.4")
     text = (
         "የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ" )
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     test_roundtrip_basic()
 
 Output:    
-    Tokenizer state loaded from amh_bpe_v0.2.3.json
+    Tokenizer state loaded from amh_bpe_vv0.2.4.json
     Original Text:  የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ
     Tokens:  ['የአከኦ', 'ረኢደአረእ<eow>', 'ለእመኣተእ<eow>', 'ገአ', 'ፀ', 'አ<eow>', 'በአረአ', 'ከአተእ<eow>', 'የአሀኦነ', 'ኣቸአወእ<eow>', 'የአ', 'ከአተአመኣ', 'ቸእነእ<eow>', 'ሰአፈአረ', 'ኦቸእ<eow>', 'በአ', 'ነአወኣረኢወኦቸእ<eow>', 'አነእደአ', 'በአተእ<eow>', 'በአሰአ', 'ዓተእ<eow>', '2', '0', '9', '<eow>', 'ከኢለኦ<eow>', 'መኤተእረእ<eow>', 'የአመኢ', 'ጓ', 'ዘ', 'አወእ<eow>', 'አወ', 'እለኦ<eow>', 'ነእ', 'ፈኣ', 'ሰእ<eow>', 'ከአ', 'ጀኣ', 'መኣየእ', 'ከኣ<eow>', 'ቀአጠእለኦ<eow>', 'ከኡ', 'በኣ<eow>', 'ደአረእሰ', 'ኡኣለእ<eow>', 'ጠአቀእለኣየእ<eow>']
     IDs:  [2794, 4229, 1136, 66, 37, 79, 711, 1556, 1480, 116, 43, 1467, 1162, 4664, 68, 45, 1618, 2182, 219, 1831, 879, 1, 1, 1, 0, 2824, 2684, 95, 1, 27, 58, 46, 4373, 67, 206, 83, 62, 1083, 4653, 230, 3916, 191, 202, 1221, 477, 496]
@@ -129,7 +129,7 @@ tokenizer = AmharicTokenizer.load("amh_bpe_model")
 from amharic_tokenizer import AmharicTokenizer
 
 # Load a trained model
-tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
+tok = AmharicTokenizer.load("amh_bpe_vv0.2.4")
 
 text = "ኢትዮጵያ ጥሩ ናት።"
 

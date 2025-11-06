@@ -3,7 +3,7 @@
 from amharic_tokenizer import AmharicTokenizer
 def test_roundtrip_basic():
     """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
-    tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
+    tok = AmharicTokenizer.load("amh_bpe_vv0.2.4")
     text = (
         "የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ" )
 
