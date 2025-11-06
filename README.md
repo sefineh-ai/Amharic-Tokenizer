@@ -35,31 +35,36 @@ Implements: **cleaning → fidel decomposition → BPE training/application → 
    detokenized = tok.detokenize(tokens)
    ```
    The tokenizer now supports seamless conversion between tokens and IDs, ensuring full consistency between tokenization and detokenization.
+   
 ---
 
-### Example
+### Test Script: test_roundtrip_basic.py
 
 ```python
-text = "ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል"
+from amharic_tokenizer import AmharicTokenizer
+def test_roundtrip_basic():
+    """Load a trained tokenizer, tokenize text, convert to IDs, and detokenize."""
+    tok = AmharicTokenizer.load("amh_bpe_v0.2.3")
+    text = (
+        "የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ" )
 
-tokens = tok.tokenize(text)
-ids = tok.convert_tokens_to_ids(tokens)
-tokens = tok.decode(ids)
-detokenized = tok.detokenize(tokens)
+    tokens = tok.tokenize(text)
+    ids = tok.encode(text)
+    detokenized = tok.detokenize(tokens)
+    print("Original Text: ", text)
+    print("Tokens: ", tokens)
+    print("IDs: ", ids)
+    print("Detokenized Text: ", detokenized)
+    assert text == detokenized, "Detokenized text does not match the original."
+if __name__ == "__main__":
+    test_roundtrip_basic()
 
-print("Tokens:", tokens)
-print("IDs:", ids)
-print("Detokenized:", detokenized)
-
-Output:
-    Tokens:
-    ['ሰእወኢ', 'ደ', 'እነ', 'እ', '<eow>', ' ', 'ከአ', 'ኢተእየኦጰእ', 'የ', 'ኣ', '<eow>', ' ', 'ገኣ', 'ረ', 'እ', '<eow>', ... ]
-    IDs:
-    [56252, 191975, 123541, 121977, 9863, 4, 134750, 119975, 156339, 120755, ...]
-    Tokens from IDs:
-    ['ሰእወኢ', 'ደ', 'እነ', 'እ', '<eow>', ...]
-    Detokenized:
-    ስዊድን ከኢትዮጵያ ጋር ያላትን ግንኙነት አስመልክቶ አዲስ የትብብር ስልት መነደፉን አምባሳደሩ ገልጸዋል
+Output:    
+    Tokenizer state loaded from amh_bpe_v0.2.3.json
+    Original Text:  የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ
+    Tokens:  ['የአከኦ', 'ረኢደአረእ<eow>', 'ለእመኣተእ<eow>', 'ገአ', 'ፀ', 'አ<eow>', 'በአረአ', 'ከአተእ<eow>', 'የአሀኦነ', 'ኣቸአወእ<eow>', 'የአ', 'ከአተአመኣ', 'ቸእነእ<eow>', 'ሰአፈአረ', 'ኦቸእ<eow>', 'በአ', 'ነአወኣረኢወኦቸእ<eow>', 'አነእደአ', 'በአተእ<eow>', 'በአሰአ', 'ዓተእ<eow>', '2', '0', '9', '<eow>', 'ከኢለኦ<eow>', 'መኤተእረእ<eow>', 'የአመኢ', 'ጓ', 'ዘ', 'አወእ<eow>', 'አወ', 'እለኦ<eow>', 'ነእ', 'ፈኣ', 'ሰእ<eow>', 'ከአ', 'ጀኣ', 'መኣየእ', 'ከኣ<eow>', 'ቀአጠእለኦ<eow>', 'ከኡ', 'በኣ<eow>', 'ደአረእሰ', 'ኡኣለእ<eow>', 'ጠአቀእለኣየእ<eow>']
+    IDs:  [2794, 4229, 1136, 66, 37, 79, 711, 1556, 1480, 116, 43, 1467, 1162, 4664, 68, 45, 1618, 2182, 219, 1831, 879, 1, 1, 1, 0, 2824, 2684, 95, 1, 27, 58, 46, 4373, 67, 206, 83, 62, 1083, 4653, 230, 3916, 191, 202, 1221, 477, 496]
+    Detokenized Text:  የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር የሚጓዘው አውሎ ንፋስ ከጃማይካ ቀጥሎ ኩባ ደርሷል ጠቅላይ
 ```
 ### Additional Improvements
 * Added `vocab_size` property for inspecting model vocabulary.

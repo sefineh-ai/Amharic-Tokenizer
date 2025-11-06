@@ -243,11 +243,20 @@ cdef class AmharicTokenizer:
 
     @classmethod
     def load(cls, file_path):
+        import os 
+        import importlib.resources
         if not file_path.endswith(".json"):
             file_path += ".json"
-        with open(file_path, 'r', encoding='utf-8') as f:
-            state = json.load(f)
-            
+        try:
+            filename = os.path.basename(file_path)
+            with importlib.resources.open_text("amharic_tokenizer", filename, encoding="utf-8") as f:
+                state = json.load(f)
+            source = f"amharic_tokenizer/{filename}"
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Tokenizer file '{file_path}' not found in working directory or amharic_tokenizer package."
+            )
+
         tokenizer = cls(
             num_merges=state.get('num_merges', 50000), 
             max_vocab_size=state.get('max_vocab_size', 5000)
