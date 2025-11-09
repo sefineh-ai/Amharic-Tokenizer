@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *.class
-*.txt
+# *.txt
 # C extensions
 *.so
 
@@ -14,7 +14,7 @@ dist/
 *.egg-info/
 *.egg
 MANIFEST
-
+websites.txt
 # Virtual environments
 .venv/
 venv/

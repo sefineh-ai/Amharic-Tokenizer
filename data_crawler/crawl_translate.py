@@ -179,6 +179,6 @@ class AmharicCrawler:
         print(f"\n✅ Crawled {len(self.visited)} pages. Output: {self.output_txt}")
 
 if __name__ == "__main__":
-    START_URLS = ["https://www.shegerfm.com"]
+    START_URLS = ["<URL>"]
     crawler = AmharicCrawler(start_urls=START_URLS, max_pages=500, delay=1.0)
     crawler.crawl()
