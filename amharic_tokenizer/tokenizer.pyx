@@ -21,7 +21,7 @@ cdef class AmharicTokenizer:
     cdef public dict _id_to_token
     cdef public int _next_id
 
-    def __init__(self, int num_merges=50000, int max_vocab_size=5000):
+    def __init__(self, int num_merges=50000, int max_vocab_size=10000):
         self._vocabulary = {}
         self._merge_rank_map = {}
         self._num_merges = num_merges
@@ -259,7 +259,7 @@ cdef class AmharicTokenizer:
 
         tokenizer = cls(
             num_merges=state.get('num_merges', 50000), 
-            max_vocab_size=state.get('max_vocab_size', 5000)
+            max_vocab_size=state.get('max_vocab_size', 10000)
         )
         tokenizer._vocabulary = state['vocabulary']
         tokenizer._merge_rank_map = state['merge_rank_map']

@@ -16,16 +16,20 @@
 Implements: **cleaning → fidel decomposition → BPE training/application → detokenization**, with a **Cython core for speed**.
 
 ---
-## What's new in v0.2.4
+## What's new in v0.2.5
+- Vocab size: 10000 tokens
+- Trained on a larger and more diverse Amharic corpus
+- Improved tokenization quality and detokenization accuracy
+- Better handling of edge cases and rare words
 1. **Pretrained tokenizer loading**
 
   - You can now load a pretrained tokenizer directly:
 
    ```python
    from amharic_tokenizer import AmharicTokenizer
-   tok = AmharicTokenizer.load("amh_bpe_v0.2.4")
+   tok = AmharicTokenizer.load("amh_bpe_v0.2.5")
    ```
-   This version includes a pretrained model (`amh_bpe_v0.2.4`) that can be used immediately without any additional setup and training.
+   This version includes a pretrained model (`amh_bpe_v0.2.5`) that can be used immediately without any additional setup and training.
 
 2. **Full token-to-ID and ID-to-token functionality**
   - Added complete round-trip processing methods:

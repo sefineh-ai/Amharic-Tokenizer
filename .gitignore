@@ -44,7 +44,7 @@ env/
 htmlcov/
 .tox/
 .mypy_cache/
-data_crawler
+# data_crawler
 scripts/
 amh_bpe_sample.json
 # Local config
