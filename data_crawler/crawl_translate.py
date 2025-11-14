@@ -1,20 +1,34 @@
-import requests
-from bs4 import BeautifulSoup
+"""Web crawler and translator for extracting Amharic text."""
+
 import re
 import time
 import urllib.parse
+from typing import List, Set, Optional
 from urllib.parse import urljoin, urlparse, urlunparse, parse_qs, urlencode
 from collections import deque
-from typing import List, Set, Optional
-# from deep_translator import GoogleTranslator  # type: ignore
+import requests
+from requests.exceptions import RequestException
+from deep_translator.exceptions import NotValidPayload, LanguageNotSupportedException
+from bs4 import BeautifulSoup
 
 
 class AmharicCrawler:
+    """
+    A web crawler for extracting Amharic text from websites.
+    Supports normalization, filtering, and saving extracted sentences.
+    """
+
     AMHARIC_REGEX = re.compile(r"[\u1200-\u137f]")  # Ethiopic block
     SENTENCE_SPLIT_REGEX = re.compile(r"(?<=[.!?።፧፨])\s+")
 
-    UNWANTED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".svg", ".pdf", ".mp4", ".zip", ".exe", ".webp", ".ico")
-    SKIP_KEYWORDS = ("login", "signup", "register", "privacy", "contact", "terms", "policy", "account", "cookie")
+    UNWANTED_EXTENSIONS = (
+        ".jpg", ".jpeg", ".png", ".gif",
+        ".svg", ".pdf", ".mp4", ".zip", ".exe", ".webp", ".ico"
+    )
+    SKIP_KEYWORDS = (
+        "login", "signup", "register", "privacy",
+        "contact", "terms", "policy", "account", "cookie"
+    )
 
     def __init__(
         self,
@@ -31,27 +45,34 @@ class AmharicCrawler:
         self.queue: deque = deque(start_urls)
 
         # Reset output file
-        open(self.output_txt, "w", encoding="utf-8").close()
+        with open(self.output_txt, "w", encoding="utf-8").close():
+            pass
 
     @staticmethod
     def is_amharic_text(text: str) -> bool:
+        """Return True if the text contains any Amharic characters."""
         return bool(AmharicCrawler.AMHARIC_REGEX.search(text))
 
     @staticmethod
     def clean_text(text: str) -> str:
+        """Normalize whitespace and strip text."""
         text = text.strip()
         text = re.sub(r"\s+", " ", text)
         return text
 
     @staticmethod
     def get_page(url: str) -> Optional[str]:
+        """Normalize whitespace and strip text."""
         try:
             url_encoded = urllib.parse.quote(url, safe=":/?=&")
-            resp = requests.get(url_encoded, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+            resp = requests.get(
+                url_encoded, timeout=10,
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
             resp.raise_for_status()
             resp.encoding = "utf-8"
             return resp.text
-        except Exception as e:
+        except RequestException as e:
             print(f"Failed to fetch {url}: {e}")
             return None
 
@@ -66,7 +87,8 @@ class AmharicCrawler:
             if not (k.lower().startswith("utm") or k.lower() in ["fbclid", "ref"])
         }
 
-        clean_parts = parts._replace(fragment="", query=urlencode(clean_query, doseq=True))
+        clean_parts = parts._replace(
+            fragment="", query=urlencode(clean_query, doseq=True))
         normalized = urlunparse(clean_parts)
         return normalized
 
@@ -106,11 +128,17 @@ class AmharicCrawler:
     # -------------------- Content Extraction --------------------
     @classmethod
     def extract_and_translate_sentences(cls, html: str) -> List[str]:
-        """Extract visible text, split into sentences, translate to Amharic, and return list of lines."""
+        """
+        Extract visible text, split into sentences, translate to Amharic, 
+        and return list of lines.
+        """
         soup = BeautifulSoup(html, "html.parser")
 
         # Remove non-textual or redundant sections
-        for tag in soup(["script", "style", "noscript", "iframe", "header", "footer", "svg", "img", "nav", "form"]):
+        for tag in soup([
+            "script", "style", "noscript", "iframe", "header", "footer",
+            "svg", "img", "nav", "form"
+        ]):
             tag.decompose()
 
         sentences_am: List[str] = []
@@ -138,7 +166,7 @@ class AmharicCrawler:
                         # translated = translator.translate(sent)
                         # sentences_am.append(translated)
                         # time.sleep(0.15)
-                except Exception as e:
+                except (NotValidPayload, LanguageNotSupportedException) as e:
                     print(f"  - Translation failed for '{sent[:40]}...': {e}")
 
         return sentences_am
@@ -176,7 +204,9 @@ class AmharicCrawler:
 
             time.sleep(self.delay)
 
-        print(f"\n✅ Crawled {len(self.visited)} pages. Output: {self.output_txt}")
+        print(
+            f"\n✅ Crawled {len(self.visited)} pages. Output: {self.output_txt}")
+
 
 if __name__ == "__main__":
     START_URLS = ["<URL>"]

@@ -1,12 +1,28 @@
+"""
+Utility for cleaning Amharic text files.
+
+This module provides tools for:
+- Removing duplicates, empty lines, and short lines.
+- Removing English letters, digits, and unwanted ASCII punctuation.
+- Keeping Amharic characters and valid punctuation.
+- Splitting lines into sentences.
+- Saving cleaned Amharic sentences to an output file.
+"""
+
 import re
+
 
 def clean_amharic_file(input_path: str, output_path: str, min_length: int = 15):
     """
-    Cleans Amharic text files:
-    - Removes duplicates, empty lines, short lines
-    - Removes English letters, digits, and unwanted ASCII punctuation
-    - Keeps Amharic letters and punctuation (።፤፣፥፧ ? ! " ')
-    - Splits lines into sentences
+    Clean an Amharic text file.
+
+    Args:
+        input_path (str): Path to raw text file.
+        output_path (str): Path to save cleaned text.
+        min_length (int): Minimum sentence length to keep.
+
+    Returns:
+        None
     """
     cleaned_lines = []
     seen = set()
@@ -42,4 +58,5 @@ def clean_amharic_file(input_path: str, output_path: str, min_length: int = 15):
 
 
 if __name__ == "__main__":
-    clean_amharic_file("raw_amharic.txt", "cleaned_raw_amharic.txt", min_length=15)
+    clean_amharic_file("raw_amharic.txt",
+                       "cleaned_raw_amharic.txt", min_length=15)
