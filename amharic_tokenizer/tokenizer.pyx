@@ -4,7 +4,9 @@ import re
 import json
 from collections import Counter
 from typing import List
+import time
 from amharic_tokenizer.fidel_map import AMHARIC_FIDEL_MAP, REVERSE_FIDEL_MAP
+start = time.time()
 cdef class AmharicTokenizer:
     """
     Optimized BPE Tokenizer for Amharic Fidel using Cython.
@@ -21,7 +23,7 @@ cdef class AmharicTokenizer:
     cdef public dict _id_to_token
     cdef public int _next_id
 
-    def __init__(self, int num_merges=50000, int max_vocab_size=10000):
+    def __init__(self, int num_merges=50000, int max_vocab_size=30000):
         self._vocabulary = {}
         self._merge_rank_map = {}
         self._num_merges = num_merges
@@ -100,21 +102,27 @@ cdef class AmharicTokenizer:
         cdef tuple best_pair
         cdef list token_list, new_list, new_tokenized_words
         cdef object new_pair_counts
+        cdef float percent_done
+
         for i in range(self._num_merges):
             if len(self._vocabulary) >= self._max_vocab_size:
                 if verbose:
-                    print(f"Stopping BPE training. Max vocabulary size ({self._max_vocab_size}) reached.")
+                    print(f"\nStopping BPE training. Max vocabulary size ({self._max_vocab_size}) reached.{(time.time() - start)/60} Minutes" )
                 break
-            if verbose and (i + 1) % log_every == 0:
-                print(f"Merge {i + 1}/{self._num_merges} completed. Current vocab size: {len(self._vocabulary)}")
-                
+
+            # Show progress in percent
+            if verbose:
+                percent_done = (i + 1) / self._num_merges * 100
+                if (i + 1) % log_every == 0 or i == 0 or i == self._num_merges - 1:
+                    print(f"\rTraining progress: {percent_done:.2f}% - Current vocab size: {len(self._vocabulary)}", end='', flush=True)
+
             if not pair_counts:
                 break
-                
+
             best_pair = max(pair_counts, key=pair_counts.get)
             if pair_counts[best_pair] < 2:
                 break
-                
+
             new_token = ''.join(best_pair)
             if new_token not in self._vocabulary:
                 self._merge_rank_map[new_token] = len(self._merge_rank_map) + 1
@@ -142,7 +150,11 @@ cdef class AmharicTokenizer:
                     new_tokenized_words.append(token_list)
             tokenized_words = new_tokenized_words
             pair_counts = new_pair_counts
+
+        if verbose:
+            print("\nTraining completed.")
         return len(self._merge_rank_map)
+
 
     cpdef tuple _get_best_merge(self, list current_corpus, dict reversed_merge_map):
         cdef tuple best_pair = None
@@ -239,7 +251,7 @@ cdef class AmharicTokenizer:
         }
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(state, f, ensure_ascii=False, indent=4)
-        print(f"Tokenizer state saved to {file_path}")
+        print(f"Tokenizer state saved to {file_path}. {(time.time() - start)/60} Minutes")
 
     @classmethod
     def load(cls, file_path):
@@ -259,7 +271,7 @@ cdef class AmharicTokenizer:
 
         tokenizer = cls(
             num_merges=state.get('num_merges', 50000), 
-            max_vocab_size=state.get('max_vocab_size', 10000)
+            max_vocab_size=state.get('max_vocab_size', 30000)
         )
         tokenizer._vocabulary = state['vocabulary']
         tokenizer._merge_rank_map = state['merge_rank_map']
