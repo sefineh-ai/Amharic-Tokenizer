@@ -29,8 +29,8 @@ dependencies = []
 dev = ["pytest>=7", "pytest-cov", "ruff>=0.5", "mypy>=1.8", "build", "Cython>=3.0"]
 
 [project.urls]
-Homepage = "https://github.com/sefineh-ai/AMH-Tokenizer"
-Issues = "https://github.com/sefineh-ai/AMH-Tokenizer/issues"
+Homepage = "https://github.com/sefineh-ai/Amharic-Tokenizer"
+Issues = "https://github.com/sefineh-ai/Amharic-Tokenizer/issues"
 
 [project.scripts]
 amh-tokenizer = "amharic_tokenizer.cli:main"

@@ -2,8 +2,8 @@
 [![PyPI Version](https://img.shields.io/pypi/v/amharic-tokenizer.svg?logo=pypi&logoColor=white)](https://pypi.org/project/amharic-tokenizer/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/amharic-tokenizer.svg?logo=python&logoColor=white)](https://pypi.org/project/amharic-tokenizer/)
 [![Cython](https://img.shields.io/badge/Cython-Optimized-brightgreen?logo=cython&logoColor=white)](https://cython.org/)
-[![Build Status](https://github.com/sefineh-ai/AMH-Tokenizer/actions/workflows/ci.yml/badge.svg)](https://github.com/sefineh-ai/AMH-Tokenizer/actions)
-[![License](https://img.shields.io/github/license/sefineh-ai/AMH-Tokenizer.svg?color=yellow)](https://github.com/sefineh-ai/AMH-Tokenizer/blob/main/LICENSE)
+[![Build Status](https://github.com/sefineh-ai/Amharic-Tokenizer/actions/workflows/ci.yml/badge.svg)](https://github.com/sefineh-ai/Amharic-Tokenizer/actions)
+[![License](https://img.shields.io/github/license/sefineh-ai/Amharic-Tokenizer.svg?color=yellow)](https://github.com/sefineh-ai/Amharic-Tokenizer/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/pypi/dm/amharic-tokenizer?label=Downloads&color=orange)](https://pypi.org/project/amharic-tokenizer/)
 [![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 
@@ -236,4 +236,4 @@ pip install -i https://test.pypi.org/simple/ \
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](https://github.com/sefineh-ai/AMH-Tokenizer/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/sefineh-ai/Amharic-Tokenizer/blob/main/LICENSE) file for details.
