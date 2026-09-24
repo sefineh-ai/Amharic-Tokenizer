@@ -1,6 +1,17 @@
-"""This module defines the Amharic fidel mapping and its reverse lookup dictionary."""
+"""Ethiopic fidel decomposition.
 
-AMHARIC_FIDEL_MAP = {
+Each fidel (syllable) is decomposed into its consonant base followed by one or
+more vowel carriers, e.g. ``ሉ -> ለ + ኡ`` and ``ቋ -> ቀ + ኡ + ኣ``. BPE training
+and tokenization operate on these decomposed strings; :func:`compose` reverses
+the mapping when turning tokens back into text.
+"""
+
+from __future__ import annotations
+
+from typing import Dict, List
+
+# fmt: off
+AMHARIC_FIDEL_MAP: Dict[str, str] = {
     "ሀ":"ሀአ","ሁ":"ሀኡ","ሂ":"ሀኢ","ሃ":"ሀኣ","ሄ":"ሀኤ","ህ":"ሀእ","ሆ":"ሀኦ",
     "ለ":"ለአ","ሉ":"ለኡ","ሊ":"ለኢ","ላ":"ለኣ","ሌ":"ለኤ","ል":"ለእ","ሎ":"ለኦ","ሏ":"ለኡኣ",
     "ሐ":"ሐአ","ሑ":"ሐኡ","ሒ":"ሐኢ","ሓ":"ሐኣ","ሔ":"ሐኤ","ሕ":"ሐእ","ሖ":"ሐኦ","ሗ":"ሐኡኣ",
@@ -24,7 +35,7 @@ AMHARIC_FIDEL_MAP = {
     "የ":"የአ","ዩ":"የኡ","ዪ":"የኢ","ያ":"የኣ","ዬ":"የኤ","ይ":"የእ","ዮ":"የኦ","ዯ":"የኡኣ",
     "ደ":"ደአ","ዱ":"ደኡ","ዲ":"ደኢ","ዳ":"ደኣ","ዴ":"ደኤ","ድ":"ደእ","ዶ":"ደኦ","ዷ":"ደኡኣ",
     "ጀ": "ጀአ","ጁ": "ጀኡ","ጂ": "ጀኢ","ጃ": "ጀኣ","ጄ": "ጀኤ","ጅ": "ጀእ","ጆ": "ጀኦ","ጇ": "ጀኡኣ",
-    "ገ":"ገአ","ጉ":"ገኡ","ጊ":"ገኢ","ጋ":"ገኣ","ጌ":"ገኤ","ግ":"ገእ","ጎ":"ገኦ","ጏ":"ገኡኣ",
+    "ገ":"ገአ","ጉ":"ገኡ","ጊ":"ገኢ","ጋ":"ገኣ","ጌ":"ገኤ","ግ":"ገእ","ጎ":"ገኦ","ጓ":"ገኡኣ",
     "ጠ":"ጠአ","ጡ":"ጠኡ","ጢ":"ጠኢ","ጣ":"ጠኣ","ጤ":"ጠኤ","ጥ":"ጠእ","ጦ":"ጠኦ","ጧ":"ጠኡኣ",
     "ጨ":"ጨአ","ጩ":"ጨኡ","ጪ":"ጨኢ","ጫ":"ጨኣ","ጬ":"ጨኤ","ጭ":"ጨእ","ጮ":"ጨኦ","ጯ":"ጨኡኣ",
     "ጰ":"ጰአ","ጱ":"ጰኡ","ጲ":"ጰኢ","ጳ":"ጰኣ","ጴ":"ጰኤ","ጵ":"ጰእ","ጶ":"ጰኦ","ጷ":"ጰኡኣ",
@@ -32,5 +43,57 @@ AMHARIC_FIDEL_MAP = {
     "ፀ":"ፀአ","ፁ":"ፀኡ","ፂ":"ፀኢ","ፃ":"ፀኣ","ፄ":"ፀኤ","ፅ":"ፀእ","ፆ":"ፀኦ","ፇ":"ፀኡኣ",
     "ፈ":"ፈአ","ፉ":"ፈኡ","ፊ":"ፈኢ","ፋ":"ፈኣ","ፌ":"ፈኤ","ፍ":"ፈእ","ፎ":"ፈኦ","ፏ":"ፈኡኣ",
     "ፐ":"ፐአ","ፑ":"ፐኡ","ፒ":"ፐኢ","ፓ":"ፐኣ","ፔ":"ፐኤ","ፕ":"ፐእ","ፖ":"ፐኦ","ፗ":"ፐኡኣ",
+    "ቨ":"ቨአ","ቩ":"ቨኡ","ቪ":"ቨኢ","ቫ":"ቨኣ","ቬ":"ቨኤ","ቭ":"ቨእ","ቮ":"ቨኦ","ቯ":"ቨኡኣ",
+    "ዐ":"ዐአ","ዑ":"ዐኡ","ዒ":"ዐኢ","ዓ":"ዐኣ","ዔ":"ዐኤ","ዕ":"ዐእ","ዖ":"ዐኦ",
+    "ቐ":"ቐአ","ቑ":"ቐኡ","ቒ":"ቐኢ","ቓ":"ቐኣ","ቔ":"ቐኤ","ቕ":"ቐእ","ቖ":"ቐኦ",
+    "ዸ":"ዸአ","ዹ":"ዸኡ","ዺ":"ዸኢ","ዻ":"ዸኣ","ዼ":"ዸኤ","ዽ":"ዸእ","ዾ":"ዸኦ","ዿ":"ዸኡኣ",
+    "ቈ":"ቀኡአ","ቊ":"ቀኡኢ","ቌ":"ቀኡኤ","ቍ":"ቀኡእ",
+    "ኈ":"ኀኡአ","ኊ":"ኀኡኢ","ኌ":"ኀኡኤ","ኍ":"ኀኡእ",
+    "ኰ":"ከኡአ","ኲ":"ከኡኢ","ኴ":"ከኡኤ","ኵ":"ከኡእ",
+    "ዀ":"ኸኡአ","ዂ":"ኸኡኢ","ዄ":"ኸኡኤ","ዅ":"ኸኡእ",
+    "ጐ":"ገኡአ","ጒ":"ገኡኢ","ጔ":"ገኡኤ","ጕ":"ገኡእ",
+    "ቘ":"ቐኡአ","ቚ":"ቐኡኢ","ቛ":"ቐኡኣ","ቜ":"ቐኡኤ","ቝ":"ቐኡእ",
+    "ኧ":"ኧ",
 }
-REVERSE_FIDEL_MAP = {v: k for k, v in AMHARIC_FIDEL_MAP.items()}
+# fmt: on
+
+REVERSE_FIDEL_MAP: Dict[str, str] = {v: k for k, v in AMHARIC_FIDEL_MAP.items()}
+
+#: Longest decomposition, i.e. the widest window :func:`compose` has to look at.
+MAX_DECOMPOSITION_LENGTH: int = max(len(v) for v in AMHARIC_FIDEL_MAP.values())
+
+
+def decompose(text: str) -> str:
+    """Replace every known fidel in ``text`` with its decomposed form.
+
+    Characters without a decomposition (punctuation, digits, Latin, ...) are
+    kept unchanged.
+    """
+    return "".join(AMHARIC_FIDEL_MAP.get(ch, ch) for ch in text)
+
+
+def compose(text: str) -> str:
+    """Reassemble decomposed text into fidel.
+
+    Scans left to right and greedily replaces the longest window (up to
+    :data:`MAX_DECOMPOSITION_LENGTH` characters) that is a known decomposition.
+    """
+    out: List[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        for length in range(min(MAX_DECOMPOSITION_LENGTH, n - i), 0, -1):
+            fidel = REVERSE_FIDEL_MAP.get(text[i : i + length])
+            if fidel is not None:
+                out.append(fidel)
+                i += length
+                break
+        else:
+            out.append(text[i])
+            i += 1
+    return "".join(out)
+
+
+def base_symbols() -> List[str]:
+    """Return the sorted set of characters that appear in any decomposition."""
+    return sorted({ch for decomposition in AMHARIC_FIDEL_MAP.values() for ch in decomposition})

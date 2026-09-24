@@ -1,39 +1,32 @@
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+requires = ["setuptools>=64", "wheel", "Cython>=3.0"]
 build-backend = "setuptools.build_meta"
-
-[tool.black]
-line-length = 88
-
-[tool.isort]
-profile = "black"
-
-[tool.ruff]
-exclude = ["build", "dist", ".tox"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = []
-
-[tool.pytest.ini_options]
-addopts = "-q"
-testpaths = ["tests"]
-python_files = ["test_*.py"]
 
 [project]
 name = "amharic-tokenizer"
-version = "0.2.6"
-description = "Amharic tokenizer with BPE-like merges over decomposed fidel (Cython)"
+version = "0.2.7"
+description = "Amharic BPE tokenizer over decomposed fidel, with a Cython core"
 readme = "README.md"
-requires-python = ">=3.8"
-license = "MIT"
-authors = [ { name = "Sefineh Tesfa", email = "sefinehtesfa34@gmail.com" } ]
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Sefineh Tesfa", email = "sefinehtesfa34@gmail.com" }]
+keywords = ["amharic", "tokenizer", "bpe", "nlp", "ethiopic", "fidel"]
 classifiers = [
-  "Programming Language :: Python :: 3",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: Amharic",
   "Programming Language :: Cython",
-  "Topic :: Text Processing :: Linguistic"
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Text Processing :: Linguistic",
+  "Typing :: Typed",
 ]
 dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-cov", "ruff>=0.5", "mypy>=1.8", "build", "Cython>=3.0"]
 
 [project.urls]
 Homepage = "https://github.com/sefineh-ai/AMH-Tokenizer"
@@ -41,3 +34,48 @@ Issues = "https://github.com/sefineh-ai/AMH-Tokenizer/issues"
 
 [project.scripts]
 amh-tokenizer = "amharic_tokenizer.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+amharic_tokenizer = ["py.typed", "*.pyi", "*.pyx", "models/*.json"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "integration: exercises the bundled models, the filesystem or the CLI end to end",
+]
+
+[tool.coverage.run]
+source_pkgs = ["amharic_tokenizer"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+extend-exclude = ["build", "dist", ".tox"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+  "UP006", "UP007", "UP035", "UP045",  # keep typing.List/Optional for Python 3.9 runtime compatibility
+  "RUF001", "RUF003",         # Ethiopic characters in strings/comments are intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/amharic_tokenizer/fidel.py" = ["E501", "E231"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/amharic_tokenizer"]

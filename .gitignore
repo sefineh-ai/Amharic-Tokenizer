@@ -1,55 +1,46 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
-*.class
-# *.txt
-# C extensions
+
+# Cython / C extension build output
+*.c
+*.cpp
 *.so
-data_chunks
-data
-# Distribution / packaging
-.Python
+*.pyd
+src/**/*.html
+
+# Packaging
 build/
 dist/
 .eggs/
 *.egg-info/
 *.egg
-MANIFEST
-websites.txt
+
 # Virtual environments
 .venv/
 venv/
-ENV/
 env/
+ENV/
 
-# Jupyter
-.ipynb_checkpoints
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
 
-# Cython build artifacts
-*.c
-*.cpp
-*.pyd
-
-# VS Code
+# Editors / OS
 .vscode/
-
-# macOS
+.idea/
 .DS_Store
 
-# PyCharm
-.idea/
-
-# Tests & coverage
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.mypy_cache/
-# data_crawler
-scripts/
-amh_bpe_sample.json
-# Local config
+# Local data, logs and secrets (training corpora are large; keep them out of git)
+/data/
+/data_chunks/
+*.log
 *.env
-cleaned_amharic.txt
-amh_bpe_model.json
-
+.env
+websites.txt

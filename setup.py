@@ -1,39 +1,14 @@
-"""Setup script for the Amharic Tokenizer package with Cython acceleration."""
-import os
-from Cython.Build import cythonize
-from setuptools import Extension, setup # type: ignore
+"""Build configuration for the Cython extension; all metadata lives in pyproject.toml."""
 
-here = os.path.abspath(os.path.dirname(__file__))
-readme_path = os.path.join(here, "README.md")
-with open(readme_path, "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+from Cython.Build import cythonize
+from setuptools import Extension, setup
 
 extensions = [
     Extension(
-        name="amharic_tokenizer.tokenizer",
-        sources=["amharic_tokenizer/tokenizer.pyx"],
+        name="amharic_tokenizer._bpe",
+        sources=["src/amharic_tokenizer/_bpe.pyx"],
         language="c++",
     )
 ]
 
-setup(
-    name="amharic-tokenizer",
-    version="0.2.4",
-    author="Sefineh Tesfa",
-    author_email="sefinehtesfa34@gmail.com",
-    description=(
-        "A robust Amharic tokenizer with vowel decomposition and Cython "
-        "acceleration"
-    ),
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    packages=["amharic_tokenizer"],
-    ext_modules=cythonize(extensions, language_level="3"),
-    # Console scripts are provided via pyproject.toml [project.scripts]
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Cython",
-        "Topic :: Text Processing :: Linguistic",
-    ],
-    python_requires=">=3.8",
-)
+setup(ext_modules=cythonize(extensions, language_level="3"))

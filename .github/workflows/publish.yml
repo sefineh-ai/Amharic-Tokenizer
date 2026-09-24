@@ -1,0 +1,82 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:      # lets you test the builds manually (never publishes)
+
+jobs:
+  check_version:
+    name: Tag matches package version
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compare release tag with pyproject.toml
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "tag=$TAG pyproject=$VERSION"
+          test "$TAG" = "$VERSION" || { echo "::error::Release tag $GITHUB_REF_NAME does not match version $VERSION in pyproject.toml"; exit 1; }
+
+  build_wheels:
+    name: Wheels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build and test wheels
+        run: |
+          python -m pip install "cibuildwheel>=2.22,<3"
+          python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_SKIP: "pp* *-musllinux_*"
+          # Run the full test suite against each installed wheel, plus a bundled-model smoke test
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: >-
+            python -c "from amharic_tokenizer import AmharicTokenizer as T; T.load('amh_bpe_v0.2.7')"
+            && pytest {project}/tests -q -p no:cacheprovider
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  build_sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install build twine
+          python -m build --sdist
+          twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  publish:
+    needs: [check_version, build_wheels, build_sdist]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/amharic-tokenizer
+    permissions:
+      id-token: write     # required for trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: pypa/gh-action-pypi-publish@release/v1

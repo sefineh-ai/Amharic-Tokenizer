@@ -1,5 +1,5 @@
-include README.md
-include LICENSE
-include pyproject.toml
-recursive-include amharic_tokenizer *.pyx *.pxd *.pxi *.py *.so *.cpp *.json
-recursive-include tests *.py
+include README.md LICENSE CONTRIBUTING.md CHANGELOG.md pyproject.toml setup.py
+recursive-include src/amharic_tokenizer *.py *.pyx *.pyi py.typed
+recursive-include src/amharic_tokenizer/models *.json
+recursive-include tests *.py *.txt *.json
+global-exclude *.cpp *.so *.pyc __pycache__
