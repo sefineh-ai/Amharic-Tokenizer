@@ -6,7 +6,6 @@ import re
 from pathlib import Path
 from typing import Iterable, Iterator, Set, Union
 
-_LATIN_OR_DIGIT = re.compile(r"[A-Za-z0-9]")
 _NON_ETHIOPIC = re.compile(r"[^ሀ-፿\s]")
 _WHITESPACE = re.compile(r"\s+")
 _ETHIOPIC = re.compile(r"[ሀ-፿]")
@@ -18,7 +17,6 @@ _SENTENCE_BOUNDARY = re.compile(r"[።፤፣፥፧?!\"']+")
 
 def normalize_for_training(text: str) -> str:
     """Keep only Ethiopic characters, collapsing all whitespace to single spaces."""
-    text = _LATIN_OR_DIGIT.sub("", text)
     text = _NON_ETHIOPIC.sub("", text)
     return _WHITESPACE.sub(" ", text).strip()
 

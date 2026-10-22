@@ -2,6 +2,8 @@ import pytest
 
 from amharic_tokenizer.fidel import (
     AMHARIC_FIDEL_MAP,
+    ETHIOPIC_DIGITS,
+    ETHIOPIC_PUNCTUATION,
     MAX_DECOMPOSITION_LENGTH,
     REVERSE_FIDEL_MAP,
     base_symbols,
@@ -60,3 +62,12 @@ def test_base_symbols_sorted_and_unique():
     symbols = base_symbols()
     assert symbols == sorted(set(symbols))
     assert "አ" in symbols and "ለ" in symbols
+
+
+def test_base_symbols_include_ethiopic_digits_and_punctuation():
+    # decompose() leaves these unchanged (they have no consonant+vowel form), so
+    # without a base vocabulary slot they would be unrepresentable whenever they
+    # occur without being learned as part of a merge - see test_vocabulary.py.
+    symbols = base_symbols()
+    for ch in ETHIOPIC_DIGITS + ETHIOPIC_PUNCTUATION:
+        assert ch in symbols

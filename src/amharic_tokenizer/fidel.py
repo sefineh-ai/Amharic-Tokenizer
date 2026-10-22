@@ -62,6 +62,11 @@ REVERSE_FIDEL_MAP: Dict[str, str] = {v: k for k, v in AMHARIC_FIDEL_MAP.items()}
 #: Longest decomposition, i.e. the widest window :func:`compose` has to look at.
 MAX_DECOMPOSITION_LENGTH: int = max(len(v) for v in AMHARIC_FIDEL_MAP.values())
 
+#: Ethiopic digits. Not decomposed, but still appear verbatim in training corpora.
+ETHIOPIC_DIGITS: str = "፩፪፫፬፭፮፯፰፱፲፳፴፵፶፷፸፹፺፻"
+#: Ethiopic word/sentence separators. Not decomposed, but still appear verbatim in training corpora.
+ETHIOPIC_PUNCTUATION: str = "፡።፣፤፥፦፧፨"
+
 
 def decompose(text: str) -> str:
     """Replace every known fidel in ``text`` with its decomposed form.
@@ -95,5 +100,14 @@ def compose(text: str) -> str:
 
 
 def base_symbols() -> List[str]:
-    """Return the sorted set of characters that appear in any decomposition."""
-    return sorted({ch for decomposition in AMHARIC_FIDEL_MAP.values() for ch in decomposition})
+    """Return the sorted set of characters any word's decomposition can be made of.
+
+    This is every character that appears in a decomposition, plus Ethiopic
+    digits and punctuation: :func:`decompose` leaves those unchanged (they have
+    no consonant+vowel form), so without a base vocabulary slot of their own
+    they would be unrepresentable whenever they occur without being learned as
+    part of a merge, and would silently disappear on :func:`decode`.
+    """
+    decomposed = {ch for decomposition in AMHARIC_FIDEL_MAP.values() for ch in decomposition}
+    passthrough = set(ETHIOPIC_DIGITS) | set(ETHIOPIC_PUNCTUATION)
+    return sorted(decomposed | passthrough)

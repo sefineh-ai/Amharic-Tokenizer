@@ -8,6 +8,7 @@ from amharic_tokenizer import (
     AmharicTokenizer,
     list_pretrained_models,
 )
+from amharic_tokenizer.fidel import ETHIOPIC_DIGITS, ETHIOPIC_PUNCTUATION
 
 ROUNDTRIP_TEXT = (
     "የኮሪደር ልማት ገፀ በረከት የሆናቸው የከተማችን ሰፈሮች በነዋሪዎች አንደበት በሰዓት 209 ኪሎ ሜትር "
@@ -20,7 +21,7 @@ def test_default_model_is_bundled():
 
 
 def test_default_model_shape(pretrained):
-    assert pretrained.vocab_size == 30000
+    assert pretrained.vocab_size == 30000 + len(ETHIOPIC_DIGITS) + len(ETHIOPIC_PUNCTUATION)
     assert pretrained.is_trained()
 
 
@@ -54,4 +55,5 @@ def test_every_bundled_model_loads_and_roundtrips(name):
 
 
 def test_load_accepts_json_suffix():
-    assert AmharicTokenizer.load(DEFAULT_MODEL + ".json").vocab_size == 30000
+    tok = AmharicTokenizer.load(DEFAULT_MODEL + ".json")
+    assert tok.vocab_size == 30000 + len(ETHIOPIC_DIGITS) + len(ETHIOPIC_PUNCTUATION)

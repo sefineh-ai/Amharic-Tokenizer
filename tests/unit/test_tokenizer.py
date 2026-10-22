@@ -16,7 +16,7 @@ def toy():
 def test_new_tokenizer_is_untrained():
     tok = AmharicTokenizer()
     assert not tok.is_trained()
-    assert tok.vocab_size == 45
+    assert tok.vocab_size == 72
     assert tok.merges == {}
 
 
@@ -32,7 +32,7 @@ def test_invalid_constructor_arguments(kwargs):
 
 def test_train_returns_total_merges_and_updates_vocab(toy):
     assert toy.is_trained()
-    assert toy.vocab_size == 45 + len(toy.merges)
+    assert toy.vocab_size == 72 + len(toy.merges)
     assert list(toy.merges.values()) == list(range(1, len(toy.merges) + 1))
 
 
@@ -138,3 +138,13 @@ def test_state_roundtrip(toy):
 
 def test_repr(toy):
     assert repr(toy).startswith("AmharicTokenizer(vocab_size=")
+
+
+def test_unmerged_ethiopic_punctuation_and_digits_survive_roundtrip():
+    # Regression test: '::' and digits have no fidel decomposition, so unless
+    # they are explicitly part of the base vocabulary, an untrained tokenizer
+    # (or one where they never merge with a neighbor) maps them to <unk> and
+    # silently drops them on decode instead of round-tripping.
+    tok = AmharicTokenizer()
+    text = "ሰላም፣ ነህ፡ ፩ ነው።"
+    assert tok.decode(tok.encode(text)) == text

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Ethiopic digits (`፩`-`፻`) and punctuation (`፡`, `።`, `፣`, `፤`, `፥`, `፦`, `፧`, `፨`) had no base
+  vocabulary slot: an occurrence that never got merged into a larger learned token encoded to
+  `<unk>` and silently disappeared on `decode`/`detokenize`. They are now part of
+  `Vocabulary.base()`, and the bundled pretrained models have been patched (new ids appended,
+  nothing renumbered) so existing model files benefit without retraining.
+
+### Changed
+- `normalize_for_training` dropped a redundant regex pass over the whole corpus (Latin/digit
+  stripping was already a subset of the Ethiopic-only filter that ran right after it).
+
 ## 0.2.7
 
 ### Added
